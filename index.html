@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SawftLaunch | Voice Icebreaker POC</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+    <script src="script.js" defer></script>
+  </head>
+  <body class="bg-slate-950 text-slate-100 font-['Inter']">
+    <main class="max-w-6xl mx-auto px-4 md:px-6 lg:px-8 space-y-24 pb-24">
+      <header id="hero" class="section-card gradient-hero text-center md:text-left">
+        <div class="flex flex-col md:flex-row items-center md:items-center gap-8 py-16 md:py-20">
+          <img
+            id="heroAvatar"
+            src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10'%3E%3C/svg%3E"
+            alt="Event avatar"
+            class="hero-avatar"
+          />
+          <div class="space-y-6 max-w-2xl">
+            <div class="inline-flex items-center px-4 py-1 rounded-full bg-white/20 text-xs uppercase tracking-widest">
+              Built for Cupid Dating events
+            </div>
+            <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold">
+              Speak. Shuffle. Connect.
+            </h1>
+            <p class="text-lg md:text-xl text-white/80">
+              Go from cold open to sawft launch.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 sm:items-center">
+              <button id="startBtn" class="btn-primary">Start Recording</button>
+              <span class="text-xs uppercase tracking-widest text-white/80">
+                Built for Cupid Dating events
+              </span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <section id="record" class="section-card">
+        <div class="space-y-6 text-center">
+          <h2 class="section-title">Warm up the mic</h2>
+          <p class="text-white/70 max-w-2xl mx-auto">
+            Tap record and introduce yourself. You have five seconds—enough to share a vibe,
+            a hobby, or that one unforgettable moment.
+          </p>
+          <div class="flex flex-col items-center gap-4">
+            <div id="waveform" class="waveform" aria-hidden="true">
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
+            <div class="flex gap-4 flex-wrap justify-center">
+              <button id="recordBtn" class="btn-primary">Start Recording</button>
+              <button id="stopBtn" class="btn-secondary" disabled>Stop</button>
+            </div>
+            <div id="timer" class="text-3xl font-semibold tracking-widest">00:05</div>
+            <audio id="playback" class="hidden" controls></audio>
+            <button id="generateFactsBtn" class="btn-accent hidden">Generate Facts</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="facts" class="section-card">
+        <div class="space-y-6 text-center">
+          <h2 class="section-title">Auto-generated fun facts</h2>
+          <div id="factsContent" class="space-y-4"></div>
+          <div id="profile-avinash" class="sr-only">Avinash profile anchor</div>
+        </div>
+      </section>
+
+      <section id="mystery" class="section-card">
+        <div class="space-y-6 text-center">
+          <h2 class="section-title">Your mystery card</h2>
+          <div id="mysteryCard" class="mystery-card hidden"></div>
+        </div>
+      </section>
+
+      <section id="wheel" class="section-card">
+        <div class="space-y-8 text-center">
+          <h2 class="section-title">Spin to match</h2>
+          <div id="wheelContainer" class="wheel-container">
+            <div class="wheel" id="wheelInner">
+              <div class="wheel-card" data-index="0">
+                <img
+                  data-asset="qmark"
+                  src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10'%3E%3C/svg%3E"
+                  alt="Mystery"
+                />
+              </div>
+              <div class="wheel-card" data-index="1">
+                <img
+                  data-asset="qmark"
+                  src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10'%3E%3C/svg%3E"
+                  alt="Mystery"
+                />
+              </div>
+              <div class="wheel-card" data-index="2">
+                <img
+                  data-asset="qmark"
+                  src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10'%3E%3C/svg%3E"
+                  alt="Mystery"
+                />
+              </div>
+              <div class="wheel-card" data-index="3">
+                <img
+                  data-asset="qmark"
+                  src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10'%3E%3C/svg%3E"
+                  alt="Mystery"
+                />
+              </div>
+              <div class="wheel-card" data-index="4">
+                <img
+                  data-asset="qmark"
+                  src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10'%3E%3C/svg%3E"
+                  alt="Mystery"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="space-y-4">
+            <h3 id="matchHeadline" class="text-3xl font-bold hidden">🎉 Match Found!</h3>
+            <p id="scrollIndicator" class="text-sm uppercase tracking-widest hidden">Scroll Down</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="scene" class="section-card">
+        <div class="relative flex flex-col lg:flex-row items-center gap-8">
+          <img
+            id="sceneImage"
+            src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10'%3E%3C/svg%3E"
+            alt="Two people talking"
+            class="scene-image"
+          />
+          <div class="space-y-4 w-full lg:w-auto">
+            <div class="chat-bubble left">Hey! You were my match!</div>
+            <div class="chat-bubble right">Haha small world!</div>
+            <div class="flex gap-4 flex-wrap">
+              <button id="tryAgainBtn" class="btn-secondary">Try Again</button>
+              <a id="contactBtn" class="btn-accent" href="mailto:hello@example.com?subject=SawftLaunch%20POC">Contact Us</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer id="footer" class="section-card text-center">
+        <div class="inline-flex items-center px-4 py-1 rounded-full bg-white/10 text-xs uppercase tracking-widest">
+          Built for Cupid Dating events
+        </div>
+      </footer>
+    </main>
+  </body>
+</html>

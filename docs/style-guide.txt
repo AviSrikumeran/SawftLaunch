@@ -1,0 +1,4 @@
+Design Tokens:
+- Pink: #ec4899
+- Mint: #34d399
+- Font: Inter

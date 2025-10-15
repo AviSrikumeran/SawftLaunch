@@ -1,0 +1,4 @@
+hero title “Speak. Shuffle. Connect.”
+tagline “Go from cold open to sawft launch.”
+button labels “Start Recording,” “Stop,” “Generate My Card,” “Find My Match,” “Try Again,” and “Contact Us,”
+icebreaker prompts “Ask about dream travel spot,” “Favorite midnight snack,” and “Worst first date story.”

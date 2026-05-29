@@ -171,10 +171,14 @@
     padding:18px;
     overflow:auto;
     font-family:'Space Mono',monospace;
-    font-size:12px;
-    line-height:1.35;
+    font-size:11px;
+    line-height:.9;
     white-space:pre;
+    letter-spacing:1px;
+    min-height:340px;
+    text-shadow:0 0 8px rgba(255,255,255,.1);
   }
+  .ascii-art span{display:inline-block;width:.72em}
 
   footer{margin-top:40px;font-size:11px;color:var(--ink-soft);letter-spacing:.05em;line-height:1.8;animation:rise .7s .2s ease both}
   footer b{color:var(--ink)}
@@ -223,10 +227,10 @@
       <div class="mock-body" id="mockBody"></div>
     </div>
 
-    <div class="sec-label" style="margin-top:34px">ASCII site draft</div>
+    <div class="sec-label" style="margin-top:34px">ASCII design poster</div>
     <div class="ascii-wrap">
       <div class="ascii-toolbar">
-        <span>Generated layout artifact</span>
+        <span>Generated character poster</span>
         <button class="ascii-copy" id="copyAscii" type="button">Copy</button>
       </div>
       <pre class="ascii-art" id="asciiArt"></pre>
@@ -388,44 +392,87 @@ function fit(text, width){
   return clean.slice(0, Math.max(0, width - 1)) + '…';
 }
 
+let lastAsciiText = '';
+
+function hashAt(seed, x, y){
+  let h = seed.length * 97 + x * 193 + y * 389;
+  for(let i=0;i<seed.length;i++) h = (h * 31 + seed.charCodeAt(i) + x + y) >>> 0;
+  h ^= h << 13; h ^= h >>> 17; h ^= h << 5;
+  return Math.abs(h >>> 0) / 4294967295;
+}
+
+function inAsciiShape(vibe, x, y){
+  const ax = Math.abs(x);
+  const ay = Math.abs(y);
+  if(vibe === 'editorial'){
+    return (x*x/.22 + (y+.18)*(y+.18)/.62 < 1) || (ax < .7 && y > .35 && y < .82);
+  }
+  if(vibe === 'brutalist'){
+    return (ax < .42 && ay < .78) || (x > -.78 && x < .1 && y > -.08 && y < .15) || (x > -.18 && x < .76 && y > .38 && y < .6);
+  }
+  if(vibe === 'soft'){
+    return ((x+.23)*(x+.23)/.38 + (y+.1)*(y+.1)/.52 < 1) || ((x-.28)*(x-.28)/.3 + (y-.02)*(y-.02)/.42 < 1);
+  }
+  if(vibe === 'retro'){
+    return Math.abs(y - Math.sin((x+1.1)*4.2)*.22) < .22 + (x+.35)*.08 || (x > .25 && ax + ay < 1.05);
+  }
+  if(vibe === 'luxe'){
+    return ax + ay < .92 || (ax < .18 && ay < .95) || (ay < .14 && ax < .85);
+  }
+  if(vibe === 'organic'){
+    return ((x+.18)*(x+.18)/.46 + (y+.05)*(y+.05)/.72 < 1 && x + y < .82) || Math.abs(x + y*.28) < .045;
+  }
+  if(vibe === 'playful'){
+    const a = Math.atan2(y,x);
+    const r = Math.sqrt(x*x+y*y);
+    return r < .42 + .18 * Math.cos(5*a);
+  }
+  if(vibe === 'industrial'){
+    return (ax < .58 && y > -.78 && y < .76 && Math.floor((y+1)*7)%2 === 0) || (ax < .26 && ay < .86);
+  }
+  return ax + ay < .9;
+}
+
 function generateAsciiDesign(proj, dir, pal){
   const [bg, ink, accent, accent2, soft] = pal;
-  const brand = proj.split(' ').filter(Boolean).slice(0, 2).join(' ') || 'Brand';
-  const title = proj.charAt(0).toUpperCase() + proj.slice(1);
-  const w = 62;
-  const line = '+' + '-'.repeat(w) + '+';
-  const empty = '|' + ' '.repeat(w) + '|';
-  const nav = `${brand.toUpperCase()}        About     Work     Pricing     Start`;
-  const headline = title.length > 37 ? title.slice(0, 36) + '…' : title;
-  const mood = `${dir.name} identity: ${dir.desc}`;
-  const palette = `Palette  BG ${bg}  Ink ${ink}  Accent ${accent}`;
-  const type = `Type     ${dir.fonts.display} headlines + ${dir.fonts.body} body`;
-  const cta = `[ ${dir.name === 'Brutalist' ? 'SHIP IT' : 'GET STARTED'} ]     [ LEARN MORE ]`;
-  const blocks = [
-    line,
-    '|' + fit(nav, w) + '|',
-    line,
-    empty,
-    '|' + fit('  HERO', w) + '|',
-    '|' + fit('  ' + headline, w) + '|',
-    '|' + fit('  ' + mood, w) + '|',
-    empty,
-    '|' + fit('  ' + cta, w) + '|',
-    empty,
-    line,
-    '|' + fit('  FEATURE STRIP', w) + '|',
-    '|' + fit('  [01] Visual system        [02] Launch-ready tokens', w) + '|',
-    '|' + fit('  [03] Returning visitor    [04] Weekly refresh loop', w) + '|',
-    line,
-    '|' + fit('  DESIGN TOKENS', w) + '|',
-    '|' + fit('  ' + palette, w) + '|',
-    '|' + fit('  Soft ' + soft + '  Secondary ' + accent2, w) + '|',
-    '|' + fit('  ' + type, w) + '|',
-    line,
-    '|' + fit('  FOOTER: Keep the brand stable. Refresh the expression.', w) + '|',
-    line
-  ];
-  return blocks.join('\n');
+  const seed = (proj + dir.name + accent).replace(/[^a-z0-9]/gi,'') || 'SAWFTLAUNCH';
+  const letters = (seed.toUpperCase() + seed.toLowerCase() + 'xrsapucm').replace(/[^a-z0-9]/gi,'');
+  const width = 74;
+  const height = 34;
+  let text = '';
+  let html = '';
+  for(let row=0; row<height; row++){
+    for(let col=0; col<width; col++){
+      const x = (col / (width - 1)) * 2 - 1;
+      const y = (row / (height - 1)) * 2 - 1;
+      const shaped = inAsciiShape(selected, x, y);
+      const grain = hashAt(seed, col, row);
+      const band = row % 3 === 0;
+      const idx = Math.floor(hashAt(seed + 'letters', col, row) * letters.length) % letters.length;
+      let ch = letters[idx];
+      let color = soft;
+      let opacity = .28;
+      if(shaped){
+        ch = grain > .72 ? ch.toUpperCase() : ch;
+        color = grain > .68 ? accent2 : accent;
+        opacity = band ? .78 : 1;
+      }else if(grain > .84){
+        color = bg;
+        opacity = .42;
+      }else if(grain < .22){
+        ch = ' ';
+        opacity = 0;
+      }
+      text += ch;
+      html += ch === ' '
+        ? ' '
+        : `<span style="color:${color};opacity:${opacity.toFixed(2)}">${ch}</span>`;
+    }
+    text += '\n';
+    html += '\n';
+  }
+  lastAsciiText = text;
+  return html;
 }
 
 function forge(){
@@ -487,7 +534,9 @@ function forge(){
       <span class="b2" style="background:transparent;color:${ink};border:1.5px solid ${ink}">Learn more</span>
     </div>`;
 
-  document.getElementById('asciiArt').textContent = generateAsciiDesign(proj, dir, pal);
+  const asciiEl = document.getElementById('asciiArt');
+  asciiEl.style.background = ink;
+  asciiEl.innerHTML = generateAsciiDesign(proj, dir, pal);
 
   document.getElementById('board').classList.add('show');
   document.getElementById('board').scrollIntoView({behavior:'smooth',block:'start'});
@@ -505,8 +554,7 @@ document.getElementById('surprise').onclick=()=>{
 };
 document.getElementById('proj').addEventListener('keydown',e=>{if(e.key==='Enter')forge();});
 document.getElementById('copyAscii').onclick=()=>{
-  const text = document.getElementById('asciiArt').textContent;
-  navigator.clipboard?.writeText(text);
+  navigator.clipboard?.writeText(lastAsciiText);
   document.getElementById('copyAscii').textContent='Copied';
   setTimeout(()=>document.getElementById('copyAscii').textContent='Copy',900);
 };

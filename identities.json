@@ -1,0 +1,120 @@
+{
+  "version": "1.0",
+  "name": "SawftLaunch Identity API",
+  "description": "A read-only design-identity data source. Fetch this file to pull curated design directions: color palettes and font pairings. Free, static, no auth.",
+  "endpoint_note": "GET this file's URL to receive all directions as JSON.",
+  "directions": [
+    {
+      "id": "editorial",
+      "name": "Editorial",
+      "description": "Magazine-grade. A characterful serif doing the talking, restrained body text, warm paper tones. Feels considered, literary, grown-up.",
+      "fonts": {
+        "display": { "name": "Fraunces", "weight": 600 },
+        "body": { "name": "Newsreader", "weight": 400 },
+        "google_fonts_url": "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap"
+      },
+      "palettes": [
+        { "bg": "#f6f1e7", "ink": "#1d1b18", "accent": "#b5482e", "accent2": "#7d8466", "soft": "#cdbfa6" },
+        { "bg": "#efe9dd", "ink": "#2a2520", "accent": "#9c5a3c", "accent2": "#3f5e52", "soft": "#d8c8ad" }
+      ]
+    },
+    {
+      "id": "brutalist",
+      "name": "Brutalist",
+      "description": "Loud, raw, unapologetic. Heavy grotesque type, mono accents, hard edges, a single shock color. Looks like it has opinions.",
+      "fonts": {
+        "display": { "name": "Archivo Black", "weight": 400 },
+        "body": { "name": "Space Mono", "weight": 400 },
+        "google_fonts_url": "https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:wght@400;700&display=swap"
+      },
+      "palettes": [
+        { "bg": "#ffffff", "ink": "#0a0a0a", "accent": "#ff3b1d", "accent2": "#e8e8e8", "soft": "#1f1f1f" },
+        { "bg": "#f2f2f0", "ink": "#111111", "accent": "#2b4eff", "accent2": "#d9d9d6", "soft": "#000000" }
+      ]
+    },
+    {
+      "id": "soft",
+      "name": "Soft / Pastel",
+      "description": "Gentle, rounded, friendly. Low-contrast pastels and warm geometric type. Reads calm, approachable, a little dreamy.",
+      "fonts": {
+        "display": { "name": "Quicksand", "weight": 700 },
+        "body": { "name": "Nunito", "weight": 400 },
+        "google_fonts_url": "https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&family=Nunito:wght@400;600&display=swap"
+      },
+      "palettes": [
+        { "bg": "#fbf3f4", "ink": "#3b3340", "accent": "#d98fa6", "accent2": "#b9a7d6", "soft": "#f3e2c7" },
+        { "bg": "#f5f0fa", "ink": "#36323f", "accent": "#a8c5d6", "accent2": "#f2b8c6", "soft": "#efe6d4" }
+      ]
+    },
+    {
+      "id": "retro",
+      "name": "Retro-Future",
+      "description": "Neon-on-night. Techy display type, electric accents over deep space tones. Synthwave, terminal glow, slightly cinematic.",
+      "fonts": {
+        "display": { "name": "Orbitron", "weight": 700 },
+        "body": { "name": "Rajdhani", "weight": 400 },
+        "google_fonts_url": "https://fonts.googleapis.com/css2?family=Orbitron:wght@500;800&family=Rajdhani:wght@400;600&display=swap"
+      },
+      "palettes": [
+        { "bg": "#0d1130", "ink": "#e9eefc", "accent": "#00e6c3", "accent2": "#ff3d9a", "soft": "#2a3170" },
+        { "bg": "#10081f", "ink": "#f0e9ff", "accent": "#16d2ff", "accent2": "#ffb800", "soft": "#34225c" }
+      ]
+    },
+    {
+      "id": "luxe",
+      "name": "Luxe",
+      "description": "Quiet money. High-contrast serif, airy spacing, gold against near-black or ivory. Restraint as a flex.",
+      "fonts": {
+        "display": { "name": "Cormorant Garamond", "weight": 600 },
+        "body": { "name": "Jost", "weight": 400 },
+        "google_fonts_url": "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Jost:wght@300;400;500&display=swap"
+      },
+      "palettes": [
+        { "bg": "#faf8f3", "ink": "#16140f", "accent": "#9a7b3f", "accent2": "#3a3a38", "soft": "#e4dccb" },
+        { "bg": "#13110e", "ink": "#f3efe6", "accent": "#c7a45a", "accent2": "#6b6256", "soft": "#262219" }
+      ]
+    },
+    {
+      "id": "organic",
+      "name": "Organic",
+      "description": "Earthy and human. Soft serif display, humanist body, clay-sage-sand palette. Wellness, slow living, made-by-hands warmth.",
+      "fonts": {
+        "display": { "name": "DM Serif Display", "weight": 400 },
+        "body": { "name": "Mulish", "weight": 400 },
+        "google_fonts_url": "https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Mulish:wght@400;600&display=swap"
+      },
+      "palettes": [
+        { "bg": "#f3eee4", "ink": "#2f2a22", "accent": "#8a6f4e", "accent2": "#6f7d5e", "soft": "#d3c2a3" },
+        { "bg": "#efe7da", "ink": "#33302a", "accent": "#a25f43", "accent2": "#5d7060", "soft": "#cbb893" }
+      ]
+    },
+    {
+      "id": "playful",
+      "name": "Playful",
+      "description": "Toy-bright and bouncy. Chunky rounded type, saturated primaries, zero seriousness. Built to make people smile.",
+      "fonts": {
+        "display": { "name": "Baloo 2", "weight": 700 },
+        "body": { "name": "Fredoka", "weight": 400 },
+        "google_fonts_url": "https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Fredoka:wght@400;500&display=swap"
+      },
+      "palettes": [
+        { "bg": "#fff7e8", "ink": "#26231f", "accent": "#ff5a3c", "accent2": "#1fb6a6", "soft": "#ffc233" },
+        { "bg": "#fdeef4", "ink": "#2a2330", "accent": "#7b5cff", "accent2": "#ff7aa8", "soft": "#36d39a" }
+      ]
+    },
+    {
+      "id": "industrial",
+      "name": "Industrial",
+      "description": "Workwear utilitarian. Condensed display, no-nonsense body, concrete greys with one safety accent. Tools, dashboards, things used hard.",
+      "fonts": {
+        "display": { "name": "Oswald", "weight": 600 },
+        "body": { "name": "Barlow", "weight": 400 },
+        "google_fonts_url": "https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Barlow:wght@400;600&display=swap"
+      },
+      "palettes": [
+        { "bg": "#e7e6e3", "ink": "#1a1c1e", "accent": "#ff6a00", "accent2": "#3a3f44", "soft": "#c2c0bb" },
+        { "bg": "#eceae6", "ink": "#161719", "accent": "#ffd200", "accent2": "#41474d", "soft": "#b6b4ae" }
+      ]
+    }
+  ]
+}

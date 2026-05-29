@@ -182,6 +182,7 @@
 
   <footer>
     <b>Shipped:</b> <span id="day"></span> · This is the rough version. It works. That's the whole win.<br>
+    <span id="apiStatus">● connecting to API…</span><br>
     Ideas for later go in a notes file labeled "later" — not into this tool today.
   </footer>
 
@@ -189,7 +190,10 @@
 
 <script>
 // ---- DESIGN DIRECTIONS (curated, each with palette variants + a font pairing) ----
-const DIRECTIONS = {
+// Built-in copy — used only as a safety net if the live API can't be reached
+// (e.g. you opened this file directly instead of via the web). When served on
+// the web, the tool fetches the SAME data from identities.json — the API.
+const FALLBACK_DIRECTIONS = {
   editorial: {
     name:"Editorial", desc:"Magazine-grade. A characterful serif doing the talking, restrained body text, warm paper tones. Feels considered, literary, grown-up.",
     fonts:{display:"Fraunces", body:"Newsreader", dWeight:600, link:"Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900|Newsreader:opsz,wght@6..72,400;6..72,500"},
@@ -256,26 +260,70 @@ const DIRECTIONS = {
   }
 };
 
-const ORDER = ["editorial","brutalist","soft","retro","luxe","organic","playful","industrial"];
+// DIRECTIONS + ORDER are filled either from the live API or the fallback.
+let DIRECTIONS = FALLBACK_DIRECTIONS;
+let ORDER = Object.keys(FALLBACK_DIRECTIONS);
 let selected = "editorial";
 const loadedFonts = new Set();
 
-// build vibe chips
+// ---- THE API CONNECTION ----
+// Fetch design data from the API (identities.json) and reshape it into the
+// structure the rest of the tool expects. If the fetch fails, we keep the
+// built-in fallback so the page always works.
+async function loadFromAPI(){
+  const statusEl = document.getElementById('apiStatus');
+  try{
+    const res = await fetch('identities.json', {cache:'no-store'});
+    if(!res.ok) throw new Error('bad response');
+    const data = await res.json();
+    const fresh = {};
+    data.directions.forEach(d=>{
+      fresh[d.id] = {
+        name: d.name,
+        desc: d.description,
+        fonts: {
+          display: d.fonts.display.name,
+          body: d.fonts.body.name,
+          dWeight: d.fonts.display.weight,
+          link: d.fonts.google_fonts_url   // full URL from the API
+        },
+        palettes: d.palettes.map(p=>[p.bg, p.ink, p.accent, p.accent2, p.soft])
+      };
+    });
+    DIRECTIONS = fresh;
+    ORDER = data.directions.map(d=>d.id);
+    if(statusEl) statusEl.textContent = '● design data: live from API';
+  }catch(e){
+    // stay on the built-in fallback
+    if(statusEl) statusEl.textContent = '○ design data: built-in (offline)';
+  }
+  if(!ORDER.includes(selected)) selected = ORDER[0];
+  buildChips();
+}
+
+// build vibe chips (now a function, called after data is ready)
 const vibesEl = document.getElementById('vibes');
-ORDER.forEach((k,i)=>{
-  const b=document.createElement('button');
-  b.className='chip'+(k===selected?' on':'');
-  b.textContent=DIRECTIONS[k].name;
-  b.onclick=()=>{selected=k;document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));b.classList.add('on');};
-  vibesEl.appendChild(b);
-});
+function buildChips(){
+  vibesEl.innerHTML='';
+  ORDER.forEach((k)=>{
+    const b=document.createElement('button');
+    b.className='chip'+(k===selected?' on':'');
+    b.textContent=DIRECTIONS[k].name;
+    b.onclick=()=>{selected=k;document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));b.classList.add('on');};
+    vibesEl.appendChild(b);
+  });
+}
 
 function loadFont(link){
   if(loadedFonts.has(link))return;
   loadedFonts.add(link);
   const l=document.createElement('link');
   l.rel='stylesheet';
-  l.href='https://fonts.googleapis.com/css2?family='+link.split('|').map(f=>f.replace(/ /g,'+')).join('&family=')+'&display=swap';
+  // Accept either a full Google Fonts URL (from the API) or the short
+  // "Family|Family:wght@..." form (from the built-in fallback).
+  l.href = link.startsWith('http')
+    ? link
+    : 'https://fonts.googleapis.com/css2?family='+link.split('|').map(f=>f.replace(/ /g,'+')).join('&family=')+'&display=swap';
   document.head.appendChild(l);
 }
 
@@ -356,6 +404,9 @@ document.getElementById('surprise').onclick=()=>{
 };
 document.getElementById('proj').addEventListener('keydown',e=>{if(e.key==='Enter')forge();});
 document.getElementById('day').textContent=new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+
+// Start: pull design data from the API, then build the UI.
+loadFromAPI();
 </script>
 </body>
 </html>

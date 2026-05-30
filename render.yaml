@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: sawftlaunch
+    runtime: python
+    plan: free
+    rootDir: sawftlaunch-app
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      # Set this in the Render dashboard (Environment tab). Never commit your key.
+      - key: ANTHROPIC_API_KEY
+        sync: false

@@ -6,9 +6,6 @@ Then open http://127.0.0.1:8000
 """
 
 import base64
-import json
-import re
-import secrets
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -19,10 +16,9 @@ from starlette.concurrency import run_in_threadpool
 
 import aesthetics
 import brain
+import storage
 
 BASE_DIR = Path(__file__).resolve().parent
-DATA_DIR = BASE_DIR / "data"
-DATA_DIR.mkdir(exist_ok=True)
 
 load_dotenv(BASE_DIR / ".env", override=True)  # .env wins, even over an empty shell var
 
@@ -50,25 +46,6 @@ def build_identity(aesthetic_id, name, tagline, palette=None, eyebrow="sawft lau
         "fonts": a["fonts"],
         "palette": palette or a["base_palette"],
     }
-
-
-def _slugify(text):
-    slug = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
-    return slug[:40] or "launch"
-
-
-def save_identity(render_identity):
-    """Persist a render-ready identity to disk and return its unique slug."""
-    slug = f"{_slugify(render_identity['name'])}-{secrets.token_hex(3)}"
-    (DATA_DIR / f"{slug}.json").write_text(json.dumps(render_identity))
-    return slug
-
-
-def load_identity(slug):
-    path = DATA_DIR / f"{slug}.json"
-    if not path.exists():
-        return None
-    return json.loads(path.read_text())
 
 
 # ---------------------------------------------------------------------------
@@ -129,13 +106,13 @@ async def generate(
         palette=result["palette"],
         eyebrow=result["eyebrow"],
     )
-    slug = save_identity(render_identity)
+    slug = storage.save_identity(render_identity)
     return RedirectResponse(url=f"/u/{slug}", status_code=303)
 
 
 @app.get("/u/{slug}", response_class=HTMLResponse)
 def show_identity(request: Request, slug: str):
-    identity = load_identity(slug)
+    identity = storage.load_identity(slug)
     if identity is None:
         raise HTTPException(status_code=404, detail="That identity doesn't exist.")
     return templates.TemplateResponse(request, "page.html", {"identity": identity})

@@ -67,7 +67,7 @@ SYSTEM = (
     "below. You MUST return one of these exact ids.\n"
     "2. Personalize it: craft a short brand name (use the maker's stated name if "
     "they gave one; otherwise invent a fitting, memorable one), a tiny eyebrow "
-    "label (2-4 words, e.g. a category or 'soft launch'), and ONE evocative "
+    "label (2-4 words, e.g. a category or 'sawft launch'), and ONE evocative "
     "tagline (a single sentence, ~12 words max).\n"
     "3. Produce a palette of 5 hex colors (bg, ink, accent, accent2, soft) that "
     "suit BOTH the chosen aesthetic AND this specific person. Start from the "

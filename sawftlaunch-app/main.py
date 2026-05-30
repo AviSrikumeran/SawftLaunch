@@ -36,7 +36,7 @@ ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"}
 # ---------------------------------------------------------------------------
 # Identity assembly + storage
 # ---------------------------------------------------------------------------
-def build_identity(aesthetic_id, name, tagline, palette=None, eyebrow="soft launch"):
+def build_identity(aesthetic_id, name, tagline, palette=None, eyebrow="sawft launch"):
     """Assemble a render-ready identity from an aesthetic + personalization."""
     a = aesthetics.get_aesthetic(aesthetic_id)
     if a is None:

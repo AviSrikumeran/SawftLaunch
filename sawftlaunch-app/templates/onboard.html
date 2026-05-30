@@ -3,218 +3,295 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SawftLaunch — soft-launch yourself</title>
+  <title>SawftLaunch — sawft-launch yourself</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Orbitron:wght@500;800&family=DM+Serif+Display&family=Cormorant+Garamond:wght@600;700&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Jost:wght@400;500;600&family=Orbitron:wght@700;800&family=DM+Serif+Display&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg:#0e0c14; --ink:#f4f1ea; --accent:#c7a45a; --accent2:#7d8466; --soft:#1c1a24;
-      --display:"Fraunces",serif;
-      --t: 900ms cubic-bezier(.4,0,.2,1);
+      --cream:#faf5ea; --ink:#16141b; --muted:#6f6880;
+      --orange:#ff552e; --blue:#797ef6; --yellow:#ffc900; --lime:#ccff00;
+      --card:#ffffff; --display:"Bricolage Grotesque",sans-serif; --body:"Jost",sans-serif;
     }
     * { margin:0; padding:0; box-sizing:border-box; }
     html { scroll-behavior:smooth; }
-    body {
-      background:var(--bg); color:var(--ink); font-family:"Jost",sans-serif;
-      transition: background-color var(--t), color var(--t);
-      overflow-x:hidden;
-    }
+    body { background:var(--cream); color:var(--ink); font-family:var(--body); overflow-x:hidden; -webkit-font-smoothing:antialiased; }
+    ::selection { background:var(--lime); color:var(--ink); }
+    a { color:inherit; }
 
-    /* animated decorative layers ------------------------------------------ */
-    .fx { position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.5; transition:opacity var(--t); }
-    .blob { position:fixed; z-index:0; border-radius:50%; filter:blur(70px); opacity:.45;
-            transition: background var(--t); pointer-events:none; }
-    .blob.b1 { width:46vw; height:46vw; top:-10vw; right:-8vw; background:var(--accent); animation:float1 16s ease-in-out infinite; }
-    .blob.b2 { width:40vw; height:40vw; bottom:-14vw; left:-10vw; background:var(--accent2); animation:float2 20s ease-in-out infinite; }
-    @keyframes float1 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-4vw,5vw) scale(1.12)} }
-    @keyframes float2 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(5vw,-4vw) scale(1.1)} }
-    /* film grain */
-    body::after {
-      content:""; position:fixed; inset:0; z-index:1; pointer-events:none; opacity:.05;
-      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    }
+    /* preloader */
+    #preloader { position:fixed; inset:0; z-index:100; background:var(--cream); display:grid; place-items:center;
+                 animation:plExit .6s cubic-bezier(.87,0,.13,1) 1.7s forwards; }
+    .pl-dots { display:flex; gap:.7rem; justify-content:center; margin-bottom:1.3rem; }
+    .pl-dots i { width:26px; height:26px; border-radius:9px; border:2.5px solid var(--ink); box-shadow:2px 2px 0 var(--ink); animation:plPop 1.4s ease-in-out infinite; }
+    .pl-dots i:nth-child(1){ background:var(--orange) } .pl-dots i:nth-child(2){ background:var(--blue); animation-delay:.15s }
+    .pl-dots i:nth-child(3){ background:var(--yellow); animation-delay:.3s } .pl-dots i:nth-child(4){ background:var(--lime); animation-delay:.45s }
+    .pl-word { font-family:var(--display); font-weight:800; font-size:1.8rem; letter-spacing:-.02em; text-align:center; opacity:0; animation:plWord .5s ease .9s forwards; }
+    .pl-word b { color:var(--orange); }
+    @keyframes plPop { 0%,100%{transform:translateY(0) rotate(0)} 50%{transform:translateY(-10px) rotate(-6deg)} }
+    @keyframes plWord { from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none} }
+    @keyframes plExit { to{ transform:translateY(-100%); visibility:hidden; } }
 
-    /* aesthetic effect backgrounds (swapped on the .fx layer) -------------- */
-    .fx-sigil-lines { background:
-        radial-gradient(circle at 50% 40%, color-mix(in srgb,var(--accent2) 22%,transparent), transparent 60%),
-        repeating-linear-gradient(115deg, transparent 0 26px, color-mix(in srgb,var(--accent) 10%,transparent) 26px 27px),
-        repeating-linear-gradient(65deg, transparent 0 22px, color-mix(in srgb,var(--ink) 5%,transparent) 22px 23px); }
-    .fx-tapa-pattern { background:
-        repeating-linear-gradient(45deg, color-mix(in srgb,var(--accent) 16%,transparent) 0 10px, transparent 10px 20px),
-        repeating-linear-gradient(-45deg, color-mix(in srgb,var(--accent2) 16%,transparent) 0 10px, transparent 10px 20px);
-        background-size:56px 56px; }
-    .fx-neon-grid { background-image:
-        linear-gradient(color-mix(in srgb,var(--accent2) 50%,transparent) 1px, transparent 1px),
-        linear-gradient(90deg, color-mix(in srgb,var(--accent2) 50%,transparent) 1px, transparent 1px);
-        background-size:48px 48px; mask-image:radial-gradient(circle at 50% 30%, #000, transparent 75%); }
-    .fx-fine-rules { background:
-        repeating-linear-gradient(0deg, transparent 0 64px, color-mix(in srgb,var(--ink) 12%,transparent) 64px 65px); }
+    /* blobs */
+    .blob { position:fixed; border-radius:50%; filter:blur(80px); opacity:.42; z-index:0; pointer-events:none; }
+    .b1 { width:42vw; height:42vw; top:-12vw; right:-6vw; background:var(--orange); animation:drift1 18s ease-in-out infinite; }
+    .b2 { width:38vw; height:38vw; bottom:-14vw; left:-8vw; background:var(--blue); animation:drift2 22s ease-in-out infinite; }
+    @keyframes drift1 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-3vw,4vw) scale(1.12)} }
+    @keyframes drift2 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(4vw,-3vw) scale(1.1)} }
 
-    /* layout --------------------------------------------------------------- */
-    .shell { position:relative; z-index:2; }
-    .topbar { display:flex; justify-content:space-between; align-items:center; padding:2rem 6vw; }
-    .wordmark { font-family:var(--display); font-weight:600; font-size:1.3rem; letter-spacing:-.01em; }
-    .wordmark b { color:var(--accent); font-style:italic; font-weight:500; transition:color var(--t); }
-    .nowtag { font-size:.72rem; letter-spacing:.28em; text-transform:uppercase; color:var(--accent);
-              transition:color var(--t); display:flex; align-items:center; gap:.5rem; }
-    .nowtag .dot { width:7px; height:7px; border-radius:50%; background:var(--accent); transition:background var(--t);
-                   box-shadow:0 0 10px var(--accent); animation:pulse 1.6s ease-in-out infinite; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+    .shell { position:relative; z-index:2; max-width:1120px; margin:0 auto; padding:0 6vw; }
 
-    .hero { min-height:62vh; display:flex; flex-direction:column; justify-content:center;
-            padding:1rem 6vw 2rem; max-width:1100px; }
-    .eyebrow { letter-spacing:.42em; text-transform:uppercase; font-size:.72rem; color:var(--accent);
-               margin-bottom:1.4rem; transition:color var(--t); }
-    .hero h1 { font-family:"Fraunces",serif; font-weight:500; line-height:.98;
-               font-size:clamp(2.6rem,8.5vw,6.4rem); letter-spacing:-.02em; }
-    .morph { font-family:var(--display); color:var(--accent); transition:color var(--t);
-             display:inline-block; will-change:transform,opacity; }
-    .morph.swap { animation:swap .9s cubic-bezier(.4,0,.2,1); }
-    @keyframes swap { 0%{opacity:0; transform:translateY(.35em) rotate(-2deg)} 100%{opacity:1; transform:none} }
-    .hero p { margin-top:1.8rem; max-width:44ch; font-size:clamp(1rem,2vw,1.25rem);
-              line-height:1.5; color:color-mix(in srgb,var(--ink) 78%, transparent); }
+    /* reveal-on-scroll */
+    .reveal { opacity:0; transform:translateY(30px); transition:opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1); }
+    .reveal.in { opacity:1; transform:none; }
+    .stagger > * { opacity:0; transform:translateY(22px); transition:opacity .55s ease, transform .55s cubic-bezier(.2,.7,.2,1); }
+    .stagger.in > * { opacity:1; transform:none; }
 
-    .swatches { display:flex; gap:.55rem; margin-top:2.2rem; }
-    .swatches span { width:34px; height:34px; border-radius:50%;
-                     box-shadow:0 0 0 1px color-mix(in srgb,var(--ink) 18%, transparent);
-                     transition:background var(--t); }
-    .scrollcue { margin-top:2.6rem; font-size:.85rem; color:color-mix(in srgb,var(--ink) 65%,transparent); }
-    .scrollcue a { color:var(--ink); text-decoration:none; border-bottom:1px solid var(--accent); padding-bottom:2px; }
+    /* top bar */
+    .topbar { display:flex; justify-content:space-between; align-items:center; padding:2rem 0 1rem; position:relative; z-index:3; }
+    .wordmark { font-family:var(--display); font-weight:800; font-size:1.5rem; letter-spacing:-.02em; }
+    .wordmark b { color:var(--orange); }
+    .beta { font-family:var(--display); font-weight:700; font-size:.72rem; letter-spacing:.04em; background:var(--ink); color:var(--cream); padding:.35rem .7rem; border-radius:999px; }
 
-    /* form card ------------------------------------------------------------ */
-    .formwrap { padding:3vh 6vw 8vh; display:flex; justify-content:center; }
-    .card {
-      width:100%; max-width:620px; background:color-mix(in srgb,#0c0a12 82%, transparent);
-      border:1px solid color-mix(in srgb,var(--accent) 35%, #2c2935);
-      border-radius:22px; padding:clamp(1.6rem,4vw,2.6rem);
-      backdrop-filter:blur(14px); box-shadow:0 30px 80px rgba(0,0,0,.45);
-      transition:border-color var(--t);
-    }
-    .card h2 { font-family:"Fraunces",serif; font-weight:600; font-size:1.7rem; margin-bottom:.3rem; color:#f4f1ea; }
-    .card .sub { color:#9b97a6; font-size:.95rem; margin-bottom:1.4rem; }
-    label { display:block; font-size:.92rem; margin:1.3rem 0 .45rem; color:#efece4; }
-    label .hint { color:#8c8898; font-size:.78rem; }
-    input[type=text], textarea, select {
-      width:100%; background:#16141d; border:1px solid #2c2935; color:#f4f1ea;
-      border-radius:11px; padding:.85rem .95rem; font:inherit; font-size:1rem;
-      transition:border-color .2s, box-shadow .2s;
-    }
-    input::placeholder, textarea::placeholder { color:#6e6a7a; }
-    textarea { resize:vertical; min-height:70px; }
-    input:focus, textarea:focus, select:focus {
-      outline:none; border-color:var(--accent);
-      box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 25%, transparent);
-    }
-    .file-box { background:#16141d; border:1px dashed #3a3645; border-radius:11px; padding:1rem; }
-    input[type=file] { width:100%; color:#9b97a6; font-size:.9rem; }
-    button {
-      margin-top:2rem; width:100%; border:none; border-radius:12px; cursor:pointer;
-      padding:1.05rem; font:inherit; font-weight:500; font-size:1.05rem; color:#15140f;
-      background:linear-gradient(100deg,var(--accent),var(--accent2));
-      background-size:200% 100%; transition:background-position .5s, transform .12s, background var(--t);
-      letter-spacing:.01em;
-    }
-    button:hover { background-position:100% 0; }
-    button:active { transform:translateY(1px) scale(.995); }
-    .pending { display:none; text-align:center; color:#9b97a6; font-size:.9rem; margin-top:1rem; }
-    form.sending button { opacity:.7; pointer-events:none; }
+    /* hero */
+    .hero { padding:4vh 0 5vh; transform-origin:left top; will-change:opacity,transform; }
+    .pill { display:inline-block; font-weight:600; font-size:.82rem; background:#fff; border:2px solid var(--ink); padding:.4rem .9rem; border-radius:999px; margin-bottom:1.6rem; box-shadow:3px 3px 0 var(--ink); }
+    .pill .spark { color:var(--orange); }
+    h1 { font-family:var(--display); font-weight:800; line-height:.84; font-size:clamp(3.2rem,13vw,8.4rem); letter-spacing:-.045em; max-width:11ch; }
+    h1 .cycle { color:var(--orange); transition:color .6s ease; display:inline-block; }
+    .lede { font-size:clamp(1.05rem,2.2vw,1.4rem); line-height:1.4; color:var(--muted); margin-top:1.8rem; max-width:32ch; }
+    .swatches { display:flex; gap:.6rem; margin-top:2.2rem; }
+    .swatches span { width:40px; height:40px; border-radius:14px; border:2px solid var(--ink); box-shadow:2px 2px 0 var(--ink); animation:breathe 3.4s ease-in-out infinite; }
+    .swatches span:nth-child(2){ animation-delay:.4s } .swatches span:nth-child(3){ animation-delay:.8s } .swatches span:nth-child(4){ animation-delay:1.2s }
+    @keyframes breathe { 0%,100%{transform:translateY(0) rotate(0)} 50%{transform:translateY(-6px) rotate(-3deg)} }
+
+    /* sliding-fill pill button */
+    .btn { position:relative; overflow:hidden; display:inline-flex; align-items:center; gap:.6rem; border:3px solid var(--ink); border-radius:999px; background:#fff; color:var(--ink); font-family:var(--display); font-weight:700; cursor:pointer; text-decoration:none; box-shadow:5px 5px 0 var(--ink); transition:transform .12s, box-shadow .12s; }
+    .btn .fill { position:absolute; inset:0; background:var(--lime); transform:translateY(101%); transition:transform .35s cubic-bezier(.87,0,.13,1); z-index:0; }
+    .btn > * { position:relative; z-index:1; }
+    .btn:hover .fill { transform:translateY(0); }
+    .btn:hover { transform:translate(-2px,-2px); box-shadow:7px 7px 0 var(--ink); }
+    .btn:active { transform:translate(3px,3px); box-shadow:1px 1px 0 var(--ink); }
+    .btn .ico { transition:transform .3s; }
+    .btn:hover .ico { transform:translateX(4px) rotate(8deg); }
+    .btn-hero { margin-top:2.6rem; padding:.85rem 1.5rem; font-size:1.05rem; }
+
+    /* marquee */
+    .marquee { margin:5vh 0; border-top:3px solid var(--ink); border-bottom:3px solid var(--ink); background:var(--ink); color:var(--cream); overflow:hidden; }
+    .mq-track { display:flex; white-space:nowrap; animation:scrollx 24s linear infinite; font-family:var(--display); font-weight:800; font-size:clamp(1.6rem,4vw,2.6rem); padding:.9rem 0; }
+    .mq-track span { padding:0 1.4rem; } .mq-track .s { color:var(--lime); }
+    @keyframes scrollx { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+    /* section heading */
+    .sec { padding:7vh 0; }
+    .kicker { font-family:var(--display); font-weight:700; font-size:.85rem; letter-spacing:.16em; text-transform:uppercase; color:var(--orange); }
+    .sec h2 { font-family:var(--display); font-weight:800; font-size:clamp(2rem,6vw,3.4rem); line-height:.95; letter-spacing:-.03em; margin-top:.6rem; max-width:16ch; }
+
+    /* how it works */
+    .steps { display:grid; grid-template-columns:repeat(3,1fr); gap:1.4rem; margin-top:2.6rem; }
+    .step { background:var(--card); border:3px solid var(--ink); border-radius:22px; padding:1.6rem; box-shadow:7px 7px 0 var(--ink); }
+    .step .n { font-family:var(--display); font-weight:800; font-size:2.4rem; line-height:1; }
+    .step .emoji { font-size:1.8rem; float:right; }
+    .step h3 { font-family:var(--display); font-weight:700; font-size:1.3rem; margin:.8rem 0 .4rem; }
+    .step p { color:var(--muted); font-size:.98rem; line-height:1.45; }
+    .step:nth-child(1) .n { color:var(--orange) } .step:nth-child(2) .n { color:var(--blue) } .step:nth-child(3) .n { color:var(--ink) }
+
+    /* aesthetic gallery */
+    .gallery { display:grid; grid-template-columns:repeat(2,1fr); gap:1.4rem; margin-top:2.6rem; }
+    .sc { position:relative; overflow:hidden; height:260px; border:3px solid var(--ink); border-radius:22px; box-shadow:7px 7px 0 var(--ink); background:var(--sbg); color:var(--sink); display:flex; flex-direction:column; justify-content:flex-end; padding:1.4rem; text-decoration:none; transition:transform .25s; }
+    .sc:hover { transform:translateY(-4px) rotate(-1deg); }
+    .sc .fx { position:absolute; inset:0; z-index:0; opacity:.65; }
+    .sc .scin { position:relative; z-index:1; }
+    .sc .eye { font-size:.7rem; letter-spacing:.28em; text-transform:uppercase; color:var(--sacc); }
+    .sc .nm { font-family:var(--sfont); font-size:2rem; line-height:1; margin-top:.3rem; }
+    .sc .dots { display:flex; gap:.4rem; margin-top:.9rem; }
+    .sc .dots i { width:18px; height:18px; border-radius:50%; box-shadow:0 0 0 1px rgba(255,255,255,.15); }
+    .fx-sigil { background:repeating-linear-gradient(115deg, transparent 0 22px, color-mix(in srgb,var(--sacc) 14%,transparent) 22px 23px), repeating-linear-gradient(65deg, transparent 0 18px, color-mix(in srgb,var(--sink) 6%,transparent) 18px 19px); }
+    .fx-tapa { background:repeating-linear-gradient(45deg, color-mix(in srgb,var(--sacc) 18%,transparent) 0 9px, transparent 9px 18px), repeating-linear-gradient(-45deg, color-mix(in srgb,var(--sacc2) 18%,transparent) 0 9px, transparent 9px 18px); background-size:46px 46px; }
+    .fx-neon { background-image:linear-gradient(color-mix(in srgb,var(--sacc2) 55%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--sacc2) 55%,transparent) 1px,transparent 1px); background-size:34px 34px; mask-image:radial-gradient(circle at 50% 20%,#000,transparent 80%); }
+    .fx-rules { background:repeating-linear-gradient(0deg, transparent 0 40px, color-mix(in srgb,var(--sink) 14%,transparent) 40px 41px); }
+
+    /* manifesto text reveal */
+    .manifesto { padding:12vh 0; }
+    .manifesto p { font-family:var(--display); font-weight:800; font-size:clamp(2rem,6.5vw,4.2rem); line-height:1.02; letter-spacing:-.03em; max-width:18ch; }
+    .manifesto .w { display:inline-block; opacity:.13; transition:opacity .5s ease; }
+    .manifesto.in .w { opacity:1; }
+    .manifesto .hl { color:var(--orange); }
+
+    /* stats ticker */
+    .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; border-top:3px solid var(--ink); border-bottom:3px solid var(--ink); padding:3.5vh 0; }
+    .stat .big { font-family:var(--display); font-weight:800; font-size:clamp(2.2rem,6vw,3.6rem); line-height:1; }
+    .stat:nth-child(1) .big{color:var(--orange)} .stat:nth-child(2) .big{color:var(--blue)} .stat:nth-child(3) .big{color:var(--ink)} .stat:nth-child(4) .big{color:var(--orange)}
+    .stat .lab { color:var(--muted); font-size:.9rem; margin-top:.4rem; }
+
+    /* form */
+    .formwrap { padding:8vh 0 6vh; display:flex; justify-content:center; }
+    .card2 { width:100%; max-width:640px; background:var(--card); border:3px solid var(--ink); border-radius:28px; padding:clamp(1.6rem,4vw,2.8rem); box-shadow:10px 10px 0 var(--ink); position:relative; }
+    .sticker { position:absolute; top:-18px; right:24px; transform:rotate(7deg); background:var(--yellow); border:2.5px solid var(--ink); border-radius:12px; font-family:var(--display); font-weight:700; font-size:.8rem; padding:.4rem .8rem; box-shadow:3px 3px 0 var(--ink); }
+    .card2 h2 { font-family:var(--display); font-weight:800; font-size:clamp(1.7rem,4vw,2.3rem); letter-spacing:-.02em; }
+    .card2 .sub { color:var(--muted); font-size:1rem; margin:.3rem 0 1.2rem; }
+    label { display:block; font-weight:600; font-size:.95rem; margin:1.3rem 0 .5rem; }
+    label .hint { color:var(--muted); font-weight:400; font-size:.8rem; }
+    input[type=text], textarea, select { width:100%; background:#fbf8f2; border:2px solid var(--ink); color:var(--ink); border-radius:14px; padding:.85rem 1rem; font:inherit; font-size:1rem; transition:transform .12s, box-shadow .15s, background .15s; }
+    input::placeholder, textarea::placeholder { color:#a39db1; }
+    textarea { resize:vertical; min-height:74px; }
+    input:focus, textarea:focus, select:focus { outline:none; background:#fff; box-shadow:4px 4px 0 var(--orange); transform:translate(-1px,-1px); }
+    .file-box { background:#fbf8f2; border:2px dashed var(--ink); border-radius:14px; padding:1rem; }
+    input[type=file] { width:100%; color:var(--muted); font-size:.9rem; }
+    .btn-submit { margin-top:2rem; width:100%; justify-content:center; padding:1.05rem; font-size:1.15rem; }
+    .pending { display:none; text-align:center; color:var(--muted); font-size:.92rem; margin-top:1rem; }
+    form.sending .btn-submit { opacity:.75; pointer-events:none; }
     form.sending .pending { display:block; }
-    .note { color:#8c8898; font-size:.8rem; margin-top:1rem; text-align:center; }
+    .note { color:var(--muted); font-size:.82rem; margin-top:1rem; text-align:center; }
+
+    footer { border-top:3px solid var(--ink); padding:4vh 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; }
+    footer .fm { font-family:var(--display); font-weight:800; font-size:1.2rem; } footer .fm b{color:var(--orange)}
+    footer .fnote { color:var(--muted); font-size:.85rem; }
+
+    @media (max-width:760px) {
+      .steps { grid-template-columns:1fr; } .gallery { grid-template-columns:1fr; } .stats { grid-template-columns:repeat(2,1fr); row-gap:2rem; }
+    }
     @media (prefers-reduced-motion: reduce) {
-      *, body::after { animation:none !important; }
-      :root { --t: 1ms; }
+      *, .blob { animation:none !important; }
+      #preloader { display:none; }
+      .reveal,.stagger>*,.manifesto .w { opacity:1 !important; transform:none !important; }
     }
   </style>
 </head>
 <body>
-  <div class="fx fx-sigil-lines" id="fx"></div>
+  <div id="preloader"><div><div class="pl-dots"><i></i><i></i><i></i><i></i></div><div class="pl-word">Sawft<b>Launch</b></div></div></div>
   <div class="blob b1"></div>
   <div class="blob b2"></div>
 
   <div class="shell">
     <div class="topbar">
       <div class="wordmark">Sawft<b>Launch</b></div>
-      <div class="nowtag"><span class="dot"></span><span id="nowname">Cybersigilism</span></div>
+      <div class="beta">✦ beta</div>
     </div>
 
-    <section class="hero">
-      <div class="eyebrow">a living design identity</div>
-      <h1>Soft-launch your <span class="morph" id="morph">edge</span>.</h1>
-      <p>Upload a few photos, answer a couple of questions, and we turn who you are into fonts, colors, and a whole mood — on a page you can share. This site is restyling itself right now. So can you.</p>
-      <div class="swatches">
-        <span id="s1"></span><span id="s2"></span><span id="s3"></span><span id="s4"></span>
-      </div>
-      <p class="scrollcue">↓ <a href="#start">make mine</a></p>
-    </section>
-
-    <section class="formwrap" id="start">
-      <form class="card" action="/generate" method="post" enctype="multipart/form-data"
-            onsubmit="this.classList.add('sending')">
-        <h2>Tell us who you are.</h2>
-        <p class="sub">Four quick things. We'll handle the taste.</p>
-
-        <label>Your name or project name <span class="hint">(optional — we'll invent one)</span></label>
-        <input type="text" name="name" placeholder="e.g. Atelier Sève" />
-
-        <label>Who are you / what are you launching?</label>
-        <textarea name="what" required placeholder="A ceramics studio? A music project? Your portfolio?"></textarea>
-
-        <label>The feeling someone should get in 3 seconds</label>
-        <textarea name="feeling" required placeholder="calm and expensive / loud and rebellious / warm and handmade..."></textarea>
-
-        <label>An aesthetic you're drawn to <span class="hint">(optional)</span></label>
-        <input type="text" name="aesthetic" placeholder="cybersigilism, island art, vaporwave, quiet luxury..." />
-
-        <label>Light or dark world?</label>
-        <select name="world">
-          <option value="either">Let SawftLaunch decide</option>
-          <option value="light">Light</option>
-          <option value="dark">Dark</option>
-        </select>
-
-        <label>A few photos of you / your work <span class="hint">(optional, up to 4)</span></label>
-        <div class="file-box"><input type="file" name="photos" accept="image/*" multiple /></div>
-
-        <button type="submit">Generate my identity →</button>
-        <p class="pending">Claude is looking at your photos and designing… ✦</p>
-        <p class="note">Takes a few seconds.</p>
-      </form>
+    <section class="hero" id="hero">
+      <span class="pill"><span class="spark">✦</span> design that becomes you</span>
+      <h1>Sawft-launch your <span class="cycle" id="cycle">vibe.</span></h1>
+      <p class="lede">A few photos, a couple of questions — and we turn who you are into a whole look you can share.</p>
+      <div class="swatches"><span style="background:var(--orange)"></span><span style="background:var(--blue)"></span><span style="background:var(--yellow)"></span><span style="background:var(--lime)"></span></div>
+      <a class="btn btn-hero" href="#start"><span class="fill"></span><span>let's make it</span><span class="ico">↓</span></a>
     </section>
   </div>
 
+  <!-- marquee -->
+  <div class="marquee"><div class="mq-track" id="mq">
+    <span>EDITORIAL</span><span class="s">✦</span><span>CYBERSIGILISM</span><span class="s">✦</span><span>PASIFIKA</span><span class="s">✦</span><span>VAPORWAVE</span><span class="s">✦</span><span>LUXE</span><span class="s">✦</span><span>ORGANIC</span><span class="s">✦</span><span>PLAYFUL</span><span class="s">✦</span>
+  </div></div>
+
+  <div class="shell">
+    <!-- how it works -->
+    <section class="sec">
+      <div class="reveal"><div class="kicker">how it works</div><h2>Three steps. Then you look like you.</h2></div>
+      <div class="steps stagger">
+        <div class="step"><span class="emoji">📸</span><div class="n">01</div><h3>Show us you</h3><p>Drop a few photos and answer four quick questions about who you are.</p></div>
+        <div class="step"><span class="emoji">✦</span><div class="n">02</div><h3>We design it</h3><p>Claude reads your vibe, picks an aesthetic, and tints a palette + fonts to you.</p></div>
+        <div class="step"><span class="emoji">🔗</span><div class="n">03</div><h3>Share the link</h3><p>Get a live page that looks unmistakably yours. Sawft-launch your whole world.</p></div>
+      </div>
+    </section>
+
+    <!-- aesthetic gallery -->
+    <section class="sec">
+      <div class="reveal"><div class="kicker">the crayon box</div><h2>One prompt. Infinite yous.</h2></div>
+      <div class="gallery stagger">
+        <a class="sc" href="/preview/cybersigilism" style="--sbg:#07070a;--sink:#e9e9f2;--sacc:#9dff3c;--sacc2:#5b2bff;--sfont:'Orbitron',sans-serif">
+          <div class="fx fx-sigil"></div><div class="scin"><div class="eye">cybersigilism</div><div class="nm">NOVA</div><div class="dots"><i style="background:#9dff3c"></i><i style="background:#5b2bff"></i><i style="background:#e9e9f2"></i></div></div></a>
+        <a class="sc" href="/preview/pasifika" style="--sbg:#1c2b2d;--sink:#f4ece0;--sacc:#e1873b;--sacc2:#3f8f86;--sfont:'DM Serif Display',serif">
+          <div class="fx fx-tapa"></div><div class="scin"><div class="eye">pasifika</div><div class="nm">Moana Made</div><div class="dots"><i style="background:#e1873b"></i><i style="background:#3f8f86"></i><i style="background:#f4ece0"></i></div></div></a>
+        <a class="sc" href="/preview/vaporwave" style="--sbg:#160a2b;--sink:#fdeafb;--sacc:#ff4fd8;--sacc2:#36e7ff;--sfont:'Orbitron',sans-serif">
+          <div class="fx fx-neon"></div><div class="scin"><div class="eye">vaporwave</div><div class="nm">After Hours</div><div class="dots"><i style="background:#ff4fd8"></i><i style="background:#36e7ff"></i><i style="background:#fdeafb"></i></div></div></a>
+        <a class="sc" href="/preview/editorial-luxe" style="--sbg:#f7f4ee;--sink:#15140f;--sacc:#9a7b3f;--sacc2:#3a3a38;--sfont:'Cormorant Garamond',serif">
+          <div class="fx fx-rules"></div><div class="scin"><div class="eye">editorial luxe</div><div class="nm">Atelier Sève</div><div class="dots"><i style="background:#9a7b3f"></i><i style="background:#3a3a38"></i><i style="background:#15140f"></i></div></div></a>
+      </div>
+    </section>
+
+    <!-- manifesto -->
+    <section class="manifesto" id="manifesto">
+      <p id="mfp">Not a template. Not a theme. A living identity that <span class="hl">becomes&nbsp;you.</span></p>
+    </section>
+
+    <!-- stats -->
+    <section class="stats stagger">
+      <div class="stat"><div class="big">8</div><div class="lab">curated aesthetics</div></div>
+      <div class="stat"><div class="big">∞</div><div class="lab">personalized palettes</div></div>
+      <div class="stat"><div class="big">~10s</div><div class="lab">to your page</div></div>
+      <div class="stat"><div class="big">1</div><div class="lab">unmistakably you</div></div>
+    </section>
+
+    <!-- form -->
+    <section class="formwrap" id="start">
+      <form class="card2 reveal" action="/generate" method="post" enctype="multipart/form-data" onsubmit="this.classList.add('sending')">
+        <span class="sticker">takes 10 sec ✦</span>
+        <h2>Tell us who you are.</h2>
+        <p class="sub">Four quick things. We'll handle the taste.</p>
+        <label>Your name or project name <span class="hint">(optional — we'll invent one)</span></label>
+        <input type="text" name="name" placeholder="e.g. Atelier Sève" />
+        <label>Who are you / what are you launching?</label>
+        <textarea name="what" required placeholder="A ceramics studio? A music project? Your portfolio?"></textarea>
+        <label>The feeling someone should get in 3 seconds</label>
+        <textarea name="feeling" required placeholder="calm and expensive / loud and rebellious / warm and handmade..."></textarea>
+        <label>An aesthetic you're drawn to <span class="hint">(optional)</span></label>
+        <input type="text" name="aesthetic" placeholder="cybersigilism, island art, vaporwave, quiet luxury..." />
+        <label>Light or dark world?</label>
+        <select name="world"><option value="either">Let SawftLaunch decide</option><option value="light">Light</option><option value="dark">Dark</option></select>
+        <label>A few photos of you / your work <span class="hint">(optional, up to 4)</span></label>
+        <div class="file-box"><input type="file" name="photos" accept="image/*" multiple /></div>
+        <button type="submit" class="btn btn-submit"><span class="fill"></span><span>Make my page</span><span class="ico">→</span></button>
+        <p class="pending">✦ Claude is looking at your photos and designing…</p>
+        <p class="note">Takes a few seconds.</p>
+      </form>
+    </section>
+
+    <footer>
+      <div class="fm">Sawft<b>Launch</b></div>
+      <div class="fnote">a living design identity · sawft-launch yourself ✦</div>
+    </footer>
+  </div>
+
   <script>
-    const THEMES = [
-      { name:"Cybersigilism", word:"edge",   font:'"Orbitron",sans-serif',
-        bg:"#07070a", ink:"#e9e9f2", accent:"#9dff3c", accent2:"#5b2bff", soft:"#15131f", fx:"fx-sigil-lines" },
-      { name:"Pasifika",      word:"roots",  font:'"DM Serif Display",serif',
-        bg:"#1c2b2d", ink:"#f4ece0", accent:"#e1873b", accent2:"#3f8f86", soft:"#2c4042", fx:"fx-tapa-pattern" },
-      { name:"Vaporwave",     word:"dream",  font:'"Orbitron",sans-serif',
-        bg:"#160a2b", ink:"#fdeafb", accent:"#ff4fd8", accent2:"#36e7ff", soft:"#3a1f63", fx:"fx-neon-grid" },
-      { name:"Editorial Luxe",word:"poise",  font:'"Cormorant Garamond",serif',
-        bg:"#f7f4ee", ink:"#15140f", accent:"#9a7b3f", accent2:"#3a3a38", soft:"#e4dccb", fx:"fx-fine-rules" },
-    ];
-    const root = document.documentElement, fx = document.getElementById("fx"),
-          morph = document.getElementById("morph"), nowname = document.getElementById("nowname"),
-          sw = [1,2,3,4].map(i => document.getElementById("s"+i));
-    let i = 0;
-    function apply(t) {
-      root.style.setProperty("--bg", t.bg);
-      root.style.setProperty("--ink", t.ink);
-      root.style.setProperty("--accent", t.accent);
-      root.style.setProperty("--accent2", t.accent2);
-      root.style.setProperty("--soft", t.soft);
-      root.style.setProperty("--display", t.font);
-      fx.className = "fx " + t.fx;
-      nowname.textContent = t.name;
-      morph.textContent = t.word;
-      morph.classList.remove("swap"); void morph.offsetWidth; morph.classList.add("swap");
-      sw[0].style.background = t.accent; sw[1].style.background = t.accent2;
-      sw[2].style.background = t.soft;   sw[3].style.background = t.ink;
-    }
-    apply(THEMES[0]);
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (!reduce) setInterval(() => { i = (i + 1) % THEMES.length; apply(THEMES[i]); }, 3600);
+
+    // headline word cycles through legible brand colors
+    const cycle = document.getElementById("cycle");
+    const COLORS = ["var(--orange)", "var(--blue)", "var(--ink)"];
+    let c = 0;
+    if (!reduce) setInterval(() => { c = (c + 1) % COLORS.length; cycle.style.color = COLORS[c]; }, 2400);
+
+    // scroll-fade hero
+    const hero = document.getElementById("hero");
+    if (!reduce) addEventListener("scroll", () => {
+      const p = Math.min(scrollY / 560, 1);
+      hero.style.opacity = String(1 - p);
+      hero.style.transform = `translateY(${p * -40}px) scale(${1 - p * 0.05})`;
+    }, { passive: true });
+
+    // seamless marquee (duplicate content)
+    const mq = document.getElementById("mq"); mq.innerHTML += mq.innerHTML;
+
+    // wrap manifesto words for staggered reveal
+    const mfp = document.getElementById("mfp");
+    (function () {
+      const hl = mfp.querySelector(".hl");
+      const head = mfp.childNodes[0].textContent.trim().split(" ");
+      mfp.childNodes[0].remove();
+      const frag = document.createDocumentFragment();
+      head.forEach((w, i) => { const s = document.createElement("span"); s.className = "w"; s.textContent = w + " "; s.style.transitionDelay = (i * 70) + "ms"; frag.appendChild(s); });
+      mfp.insertBefore(frag, hl);
+      hl.classList.add("w"); hl.style.transitionDelay = (head.length * 70) + "ms";
+    })();
+
+    // reveal-on-scroll
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+    }, { threshold: 0.18 });
+    document.querySelectorAll(".reveal, .stagger, .manifesto").forEach(el => {
+      if (el.classList.contains("stagger")) [...el.children].forEach((ch, i) => ch.style.transitionDelay = (i * 70) + "ms");
+      io.observe(el);
+    });
   </script>
 </body>
 </html>

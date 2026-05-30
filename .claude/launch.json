@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "sawftlaunch",
+      "runtimeExecutable": "sawftlaunch-app/.venv/bin/uvicorn",
+      "runtimeArgs": ["main:app", "--app-dir", "sawftlaunch-app", "--port", "8000"],
+      "port": 8000
+    }
+  ]
+}

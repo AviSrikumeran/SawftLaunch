@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SawftLaunch — something went sideways</title>
+  <style>
+    body { background:#0f0e13; color:#f4f1ea; font-family:system-ui,sans-serif;
+           min-height:100vh; display:flex; align-items:center; justify-content:center;
+           text-align:center; padding:2rem; }
+    .box { max-width:34rem; }
+    h1 { font-size:1.6rem; margin-bottom:.8rem; }
+    p { color:#9b97a6; line-height:1.5; }
+    code { background:#1c1a24; padding:.15rem .4rem; border-radius:5px; font-size:.85rem; color:#c7a45a; }
+    a { color:#c7a45a; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>The brain hiccuped.</h1>
+    <p>We couldn't generate your identity just now.</p>
+    <p><code>{{ message }}</code></p>
+    <p style="margin-top:1.5rem;"><a href="/">← Try again</a></p>
+  </div>
+</body>
+</html>

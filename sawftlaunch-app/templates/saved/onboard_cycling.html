@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SawftLaunch — soft-launch yourself</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Orbitron:wght@500;800&family=DM+Serif+Display&family=Cormorant+Garamond:wght@600;700&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:#0e0c14; --ink:#f4f1ea; --accent:#c7a45a; --accent2:#7d8466; --soft:#1c1a24;
+      --display:"Fraunces",serif;
+      --t: 900ms cubic-bezier(.4,0,.2,1);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body {
+      background:var(--bg); color:var(--ink); font-family:"Jost",sans-serif;
+      transition: background-color var(--t), color var(--t);
+      overflow-x:hidden;
+    }
+
+    /* animated decorative layers ------------------------------------------ */
+    .fx { position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.5; transition:opacity var(--t); }
+    .blob { position:fixed; z-index:0; border-radius:50%; filter:blur(70px); opacity:.45;
+            transition: background var(--t); pointer-events:none; }
+    .blob.b1 { width:46vw; height:46vw; top:-10vw; right:-8vw; background:var(--accent); animation:float1 16s ease-in-out infinite; }
+    .blob.b2 { width:40vw; height:40vw; bottom:-14vw; left:-10vw; background:var(--accent2); animation:float2 20s ease-in-out infinite; }
+    @keyframes float1 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-4vw,5vw) scale(1.12)} }
+    @keyframes float2 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(5vw,-4vw) scale(1.1)} }
+    /* film grain */
+    body::after {
+      content:""; position:fixed; inset:0; z-index:1; pointer-events:none; opacity:.05;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    /* aesthetic effect backgrounds (swapped on the .fx layer) -------------- */
+    .fx-sigil-lines { background:
+        radial-gradient(circle at 50% 40%, color-mix(in srgb,var(--accent2) 22%,transparent), transparent 60%),
+        repeating-linear-gradient(115deg, transparent 0 26px, color-mix(in srgb,var(--accent) 10%,transparent) 26px 27px),
+        repeating-linear-gradient(65deg, transparent 0 22px, color-mix(in srgb,var(--ink) 5%,transparent) 22px 23px); }
+    .fx-tapa-pattern { background:
+        repeating-linear-gradient(45deg, color-mix(in srgb,var(--accent) 16%,transparent) 0 10px, transparent 10px 20px),
+        repeating-linear-gradient(-45deg, color-mix(in srgb,var(--accent2) 16%,transparent) 0 10px, transparent 10px 20px);
+        background-size:56px 56px; }
+    .fx-neon-grid { background-image:
+        linear-gradient(color-mix(in srgb,var(--accent2) 50%,transparent) 1px, transparent 1px),
+        linear-gradient(90deg, color-mix(in srgb,var(--accent2) 50%,transparent) 1px, transparent 1px);
+        background-size:48px 48px; mask-image:radial-gradient(circle at 50% 30%, #000, transparent 75%); }
+    .fx-fine-rules { background:
+        repeating-linear-gradient(0deg, transparent 0 64px, color-mix(in srgb,var(--ink) 12%,transparent) 64px 65px); }
+
+    /* layout --------------------------------------------------------------- */
+    .shell { position:relative; z-index:2; }
+    .topbar { display:flex; justify-content:space-between; align-items:center; padding:2rem 6vw; }
+    .wordmark { font-family:var(--display); font-weight:600; font-size:1.3rem; letter-spacing:-.01em; }
+    .wordmark b { color:var(--accent); font-style:italic; font-weight:500; transition:color var(--t); }
+    .nowtag { font-size:.72rem; letter-spacing:.28em; text-transform:uppercase; color:var(--accent);
+              transition:color var(--t); display:flex; align-items:center; gap:.5rem; }
+    .nowtag .dot { width:7px; height:7px; border-radius:50%; background:var(--accent); transition:background var(--t);
+                   box-shadow:0 0 10px var(--accent); animation:pulse 1.6s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+
+    .hero { min-height:62vh; display:flex; flex-direction:column; justify-content:center;
+            padding:1rem 6vw 2rem; max-width:1100px; }
+    .eyebrow { letter-spacing:.42em; text-transform:uppercase; font-size:.72rem; color:var(--accent);
+               margin-bottom:1.4rem; transition:color var(--t); }
+    .hero h1 { font-family:"Fraunces",serif; font-weight:500; line-height:.98;
+               font-size:clamp(2.6rem,8.5vw,6.4rem); letter-spacing:-.02em; }
+    .morph { font-family:var(--display); color:var(--accent); transition:color var(--t);
+             display:inline-block; will-change:transform,opacity; }
+    .morph.swap { animation:swap .9s cubic-bezier(.4,0,.2,1); }
+    @keyframes swap { 0%{opacity:0; transform:translateY(.35em) rotate(-2deg)} 100%{opacity:1; transform:none} }
+    .hero p { margin-top:1.8rem; max-width:44ch; font-size:clamp(1rem,2vw,1.25rem);
+              line-height:1.5; color:color-mix(in srgb,var(--ink) 78%, transparent); }
+
+    .swatches { display:flex; gap:.55rem; margin-top:2.2rem; }
+    .swatches span { width:34px; height:34px; border-radius:50%;
+                     box-shadow:0 0 0 1px color-mix(in srgb,var(--ink) 18%, transparent);
+                     transition:background var(--t); }
+    .scrollcue { margin-top:2.6rem; font-size:.85rem; color:color-mix(in srgb,var(--ink) 65%,transparent); }
+    .scrollcue a { color:var(--ink); text-decoration:none; border-bottom:1px solid var(--accent); padding-bottom:2px; }
+
+    /* form card ------------------------------------------------------------ */
+    .formwrap { padding:3vh 6vw 8vh; display:flex; justify-content:center; }
+    .card {
+      width:100%; max-width:620px; background:color-mix(in srgb,#0c0a12 82%, transparent);
+      border:1px solid color-mix(in srgb,var(--accent) 35%, #2c2935);
+      border-radius:22px; padding:clamp(1.6rem,4vw,2.6rem);
+      backdrop-filter:blur(14px); box-shadow:0 30px 80px rgba(0,0,0,.45);
+      transition:border-color var(--t);
+    }
+    .card h2 { font-family:"Fraunces",serif; font-weight:600; font-size:1.7rem; margin-bottom:.3rem; color:#f4f1ea; }
+    .card .sub { color:#9b97a6; font-size:.95rem; margin-bottom:1.4rem; }
+    label { display:block; font-size:.92rem; margin:1.3rem 0 .45rem; color:#efece4; }
+    label .hint { color:#8c8898; font-size:.78rem; }
+    input[type=text], textarea, select {
+      width:100%; background:#16141d; border:1px solid #2c2935; color:#f4f1ea;
+      border-radius:11px; padding:.85rem .95rem; font:inherit; font-size:1rem;
+      transition:border-color .2s, box-shadow .2s;
+    }
+    input::placeholder, textarea::placeholder { color:#6e6a7a; }
+    textarea { resize:vertical; min-height:70px; }
+    input:focus, textarea:focus, select:focus {
+      outline:none; border-color:var(--accent);
+      box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 25%, transparent);
+    }
+    .file-box { background:#16141d; border:1px dashed #3a3645; border-radius:11px; padding:1rem; }
+    input[type=file] { width:100%; color:#9b97a6; font-size:.9rem; }
+    button {
+      margin-top:2rem; width:100%; border:none; border-radius:12px; cursor:pointer;
+      padding:1.05rem; font:inherit; font-weight:500; font-size:1.05rem; color:#15140f;
+      background:linear-gradient(100deg,var(--accent),var(--accent2));
+      background-size:200% 100%; transition:background-position .5s, transform .12s, background var(--t);
+      letter-spacing:.01em;
+    }
+    button:hover { background-position:100% 0; }
+    button:active { transform:translateY(1px) scale(.995); }
+    .pending { display:none; text-align:center; color:#9b97a6; font-size:.9rem; margin-top:1rem; }
+    form.sending button { opacity:.7; pointer-events:none; }
+    form.sending .pending { display:block; }
+    .note { color:#8c8898; font-size:.8rem; margin-top:1rem; text-align:center; }
+    @media (prefers-reduced-motion: reduce) {
+      *, body::after { animation:none !important; }
+      :root { --t: 1ms; }
+    }
+  </style>
+</head>
+<body>
+  <div class="fx fx-sigil-lines" id="fx"></div>
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+
+  <div class="shell">
+    <div class="topbar">
+      <div class="wordmark">Sawft<b>Launch</b></div>
+      <div class="nowtag"><span class="dot"></span><span id="nowname">Cybersigilism</span></div>
+    </div>
+
+    <section class="hero">
+      <div class="eyebrow">a living design identity</div>
+      <h1>Soft-launch your <span class="morph" id="morph">edge</span>.</h1>
+      <p>Upload a few photos, answer a couple of questions, and we turn who you are into fonts, colors, and a whole mood — on a page you can share. This site is restyling itself right now. So can you.</p>
+      <div class="swatches">
+        <span id="s1"></span><span id="s2"></span><span id="s3"></span><span id="s4"></span>
+      </div>
+      <p class="scrollcue">↓ <a href="#start">make mine</a></p>
+    </section>
+
+    <section class="formwrap" id="start">
+      <form class="card" action="/generate" method="post" enctype="multipart/form-data"
+            onsubmit="this.classList.add('sending')">
+        <h2>Tell us who you are.</h2>
+        <p class="sub">Four quick things. We'll handle the taste.</p>
+
+        <label>Your name or project name <span class="hint">(optional — we'll invent one)</span></label>
+        <input type="text" name="name" placeholder="e.g. Atelier Sève" />
+
+        <label>Who are you / what are you launching?</label>
+        <textarea name="what" required placeholder="A ceramics studio? A music project? Your portfolio?"></textarea>
+
+        <label>The feeling someone should get in 3 seconds</label>
+        <textarea name="feeling" required placeholder="calm and expensive / loud and rebellious / warm and handmade..."></textarea>
+
+        <label>An aesthetic you're drawn to <span class="hint">(optional)</span></label>
+        <input type="text" name="aesthetic" placeholder="cybersigilism, island art, vaporwave, quiet luxury..." />
+
+        <label>Light or dark world?</label>
+        <select name="world">
+          <option value="either">Let SawftLaunch decide</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+
+        <label>A few photos of you / your work <span class="hint">(optional, up to 4)</span></label>
+        <div class="file-box"><input type="file" name="photos" accept="image/*" multiple /></div>
+
+        <button type="submit">Generate my identity →</button>
+        <p class="pending">Claude is looking at your photos and designing… ✦</p>
+        <p class="note">Takes a few seconds.</p>
+      </form>
+    </section>
+  </div>
+
+  <script>
+    const THEMES = [
+      { name:"Cybersigilism", word:"edge",   font:'"Orbitron",sans-serif',
+        bg:"#07070a", ink:"#e9e9f2", accent:"#9dff3c", accent2:"#5b2bff", soft:"#15131f", fx:"fx-sigil-lines" },
+      { name:"Pasifika",      word:"roots",  font:'"DM Serif Display",serif',
+        bg:"#1c2b2d", ink:"#f4ece0", accent:"#e1873b", accent2:"#3f8f86", soft:"#2c4042", fx:"fx-tapa-pattern" },
+      { name:"Vaporwave",     word:"dream",  font:'"Orbitron",sans-serif',
+        bg:"#160a2b", ink:"#fdeafb", accent:"#ff4fd8", accent2:"#36e7ff", soft:"#3a1f63", fx:"fx-neon-grid" },
+      { name:"Editorial Luxe",word:"poise",  font:'"Cormorant Garamond",serif',
+        bg:"#f7f4ee", ink:"#15140f", accent:"#9a7b3f", accent2:"#3a3a38", soft:"#e4dccb", fx:"fx-fine-rules" },
+    ];
+    const root = document.documentElement, fx = document.getElementById("fx"),
+          morph = document.getElementById("morph"), nowname = document.getElementById("nowname"),
+          sw = [1,2,3,4].map(i => document.getElementById("s"+i));
+    let i = 0;
+    function apply(t) {
+      root.style.setProperty("--bg", t.bg);
+      root.style.setProperty("--ink", t.ink);
+      root.style.setProperty("--accent", t.accent);
+      root.style.setProperty("--accent2", t.accent2);
+      root.style.setProperty("--soft", t.soft);
+      root.style.setProperty("--display", t.font);
+      fx.className = "fx " + t.fx;
+      nowname.textContent = t.name;
+      morph.textContent = t.word;
+      morph.classList.remove("swap"); void morph.offsetWidth; morph.classList.add("swap");
+      sw[0].style.background = t.accent; sw[1].style.background = t.accent2;
+      sw[2].style.background = t.soft;   sw[3].style.background = t.ink;
+    }
+    apply(THEMES[0]);
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!reduce) setInterval(() => { i = (i + 1) % THEMES.length; apply(THEMES[i]); }, 3600);
+  </script>
+</body>
+</html>

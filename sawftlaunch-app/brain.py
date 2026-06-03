@@ -1,9 +1,9 @@
-"""The brain — turns a maker's photos + answers into a personalized identity.
+"""The brain — the art director.
 
-Uses Claude (Opus 4.7, vision) with structured outputs to pick the best-fitting
-aesthetic from the curated crayon box and personalize its palette, name, and
-tagline. The model can only choose an aesthetic id that actually exists, and the
-output is schema-validated, so the rest of the app gets clean, predictable data.
+Given a barber's photos + answers, Claude (Opus 4.7, vision) composes a full
+design spec from the curated design system (design.py): a layout, a type system,
+a shape language, a personalized palette — plus the portfolio copy. Output is
+schema-validated so every choice is one the renderer knows how to make look good.
 """
 
 import re
@@ -12,18 +12,15 @@ from enum import Enum
 import anthropic
 from pydantic import BaseModel
 
-import aesthetics
+import design
 
 MODEL = "claude-opus-4-7"
 
-# Constrain the model's choice to aesthetics that actually exist in the box.
-# (Enum member names can't contain hyphens, so sanitize the name but keep the
-# real id as the value — e.g. member EDITORIAL_LUXE has value "editorial-luxe".)
-AestheticId = Enum(
-    "AestheticId",
-    {aid.replace("-", "_"): aid for aid in aesthetics.aesthetic_ids()},
-    type=str,
-)
+# Constrain each design axis to ids that actually exist (hyphens -> underscores
+# in the enum member name, real id stays as the value).
+Layout = Enum("Layout", {x.replace("-", "_"): x for x in design.layout_ids()}, type=str)
+FontPairing = Enum("FontPairing", {x.replace("-", "_"): x for x in design.font_ids()}, type=str)
+Shape = Enum("Shape", {x.replace("-", "_"): x for x in design.shape_ids()}, type=str)
 
 _HEX_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
 
@@ -36,50 +33,63 @@ class Palette(BaseModel):
     soft: str
 
 
+class DesignDNA(BaseModel):
+    """The deconstruction — what the engine 'read' out of the inspiration."""
+    palette_seen: list[str]   # hex colors actually present in the inspo
+    type_character: str       # how the typography feels (e.g. "tall condensed, industrial")
+    composition: str          # layout / structure / spacing principles observed
+    mood: list[str]           # 3-5 mood keywords
+    what_works: str           # the 'why' — what makes the inspiration land
+
+
 class Identity(BaseModel):
-    aesthetic_id: AestheticId
+    dna: DesignDNA
+    layout: Layout
+    font_pairing: FontPairing
+    shape: Shape
     brand_name: str
     eyebrow: str
     tagline: str
+    bio: str
+    specialties: list[str]
     palette: Palette
 
 
-def _catalog_text():
-    lines = []
-    for aid, a in aesthetics.AESTHETICS.items():
-        lines.append(
-            f"- id: {aid}\n"
-            f"  name: {a['name']}\n"
-            f"  description: {a['description']}\n"
-            f"  fits people who feel: {', '.join(a['vibe_keywords'])}\n"
-            f"  base_palette (a starting point you may re-tint): {a['base_palette']}"
-        )
-    return "\n".join(lines)
-
-
 SYSTEM = (
-    "You are SawftLaunch's design brain. SawftLaunch turns who a person is into a "
-    "living brand identity — fonts, colors, and an aesthetic mood — that their "
-    "website can wear.\n\n"
-    "You will be given some photos of a maker (and/or their work) plus a few "
-    "answers about themselves. Your job:\n"
-    "1. Choose the SINGLE best-fitting aesthetic for them from the curated list "
-    "below. You MUST return one of these exact ids.\n"
-    "2. Personalize it: craft a short brand name (use the maker's stated name if "
-    "they gave one; otherwise invent a fitting, memorable one), a tiny eyebrow "
-    "label (2-4 words, e.g. a category or 'sawft launch'), and ONE evocative "
-    "tagline (a single sentence, ~12 words max).\n"
-    "3. Produce a palette of 5 hex colors (bg, ink, accent, accent2, soft) that "
-    "suit BOTH the chosen aesthetic AND this specific person. Start from the "
-    "aesthetic's base_palette and adjust it toward them. Every value must be a "
-    "6-digit hex like #1a2b3c. Ensure ink reads clearly against bg.\n\n"
-    "Be tasteful and specific to the person — not generic. Here is the crayon box:\n\n"
-    f"{_catalog_text()}"
+    "You are SawftLaunch's DESIGN ENGINE. SawftLaunch builds premium PORTFOLIO pages "
+    "for barbers and other solo, appointment-based pros (hair stylists, tattoo "
+    "artists, estheticians) so they look distinct and premium, escape the "
+    "'everyone looks the same on Instagram, it's a price war' trap, and raise their prices.\n\n"
+    "The images you're given are INSPIRATION the user loves (designs, shops, looks) — "
+    "NOT their own work. Do TWO things:\n\n"
+    "PART 1 — DECONSTRUCT the inspiration into its design DNA (be specific, like a "
+    "design critic):\n"
+    "   - palette_seen: the actual hex colors present across the inspo.\n"
+    "   - type_character: how the typography feels (weight, contrast, serif/sans, attitude).\n"
+    "   - composition: the layout/structure/spacing principles at play.\n"
+    "   - mood: 3-5 mood keywords.\n"
+    "   - what_works: the 'why' — what actually makes this inspiration land.\n\n"
+    "PART 2 — RECONSTRUCT something ORIGINAL for THIS person from that DNA (never a "
+    "copy — channel the feeling, don't clone the source). Compose:\n"
+    "   - layout — the structure that best channels the DNA.\n"
+    "   - font_pairing — the type system closest in spirit to type_character.\n"
+    "   - shape — corner language (sharp/rounded/soft) matching the mood.\n"
+    "   - palette — 5 cohesive hex colors (bg, ink, accent, accent2, soft) derived from "
+    "palette_seen but tuned for a usable page. CRITICAL: ink must read clearly on bg "
+    "(strong contrast); tasteful, not garish.\n\n"
+    "Then write their portfolio copy — confident, premium, specific, never generic:\n"
+    "   - brand_name (use the name they gave; else invent a strong one)\n"
+    "   - eyebrow: 2-4 words (e.g. 'Master Barber · Brooklyn')\n"
+    "   - tagline: ONE evocative sentence, ~12 words max\n"
+    "   - bio: 2-3 sentences, warm + confident, on why their chair is different. No cliches.\n"
+    "   - specialties: 3-5 short tags (e.g. 'Skin fades', 'Beard sculpting').\n\n"
+    "If no inspiration images are given, infer a fitting DNA from what they do. "
+    "Pair layout, fonts, shape and palette into ONE coherent feeling. Your kit:\n\n"
+    f"{design.catalog_text()}"
 )
 
 
 def _safe_palette(model_palette, base_palette):
-    """Trust the model's palette, but fall back to base for any malformed hex."""
     out = {}
     mp = model_palette.model_dump()
     for key, base_val in base_palette.items():
@@ -89,59 +99,46 @@ def _safe_palette(model_palette, base_palette):
 
 
 def generate_identity(images=None, answers=None):
-    """Generate a personalized identity.
-
-    images:  list of (media_type, base64_data) tuples (may be empty)
-    answers: dict of question -> answer strings
-    Returns a dict: {aesthetic_id, brand_name, eyebrow, tagline, palette}.
-    """
+    """Compose a personalized design spec + portfolio copy. Returns a dict."""
     images = images or []
     answers = answers or {}
 
     content = []
     for media_type, b64 in images:
         content.append(
-            {
-                "type": "image",
-                "source": {"type": "base64", "media_type": media_type, "data": b64},
-            }
+            {"type": "image", "source": {"type": "base64", "media_type": media_type, "data": b64}}
         )
-
     answer_text = "\n".join(f"- {k}: {v}" for k, v in answers.items() if v) or "(no answers provided)"
     content.append(
-        {
-            "type": "text",
-            "text": (
-                "Here is the maker. Their answers:\n"
-                f"{answer_text}\n\n"
-                "Design their SawftLaunch identity now."
-            ),
-        }
+        {"type": "text", "text": f"The images above are their INSPIRATION (if any). About them:\n{answer_text}\n\nDeconstruct the inspiration, then forge their original page."}
     )
 
-    client = anthropic.Anthropic()  # reads ANTHROPIC_API_KEY from env
+    client = anthropic.Anthropic()
     response = client.messages.parse(
         model=MODEL,
         max_tokens=2000,
-        system=[
-            {
-                "type": "text",
-                "text": SYSTEM,
-                "cache_control": {"type": "ephemeral"},  # catalog is stable -> cache it
-            }
-        ],
+        system=[{"type": "text", "text": SYSTEM, "cache_control": {"type": "ephemeral"}}],
         messages=[{"role": "user", "content": content}],
         output_format=Identity,
     )
 
-    identity = response.parsed_output
-    aesthetic_id = identity.aesthetic_id.value
-    base = aesthetics.get_aesthetic(aesthetic_id)["base_palette"]
-
+    iden = response.parsed_output
+    dna = iden.dna
     return {
-        "aesthetic_id": aesthetic_id,
-        "brand_name": identity.brand_name.strip(),
-        "eyebrow": identity.eyebrow.strip(),
-        "tagline": identity.tagline.strip(),
-        "palette": _safe_palette(identity.palette, base),
+        "dna": {
+            "palette_seen": [c for c in dna.palette_seen if _HEX_RE.match(c)][:6],
+            "type_character": dna.type_character.strip(),
+            "composition": dna.composition.strip(),
+            "mood": [m.strip() for m in dna.mood if m.strip()][:5],
+            "what_works": dna.what_works.strip(),
+        },
+        "layout": iden.layout.value,
+        "font_pairing": iden.font_pairing.value,
+        "shape": iden.shape.value,
+        "brand_name": iden.brand_name.strip(),
+        "eyebrow": iden.eyebrow.strip(),
+        "tagline": iden.tagline.strip(),
+        "bio": iden.bio.strip(),
+        "specialties": [s.strip() for s in iden.specialties if s.strip()][:5],
+        "palette": _safe_palette(iden.palette, design.DEFAULT_PALETTE),
     }

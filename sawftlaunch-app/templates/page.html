@@ -3,10 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{{ identity.name }} — SawftLaunch</title>
+  <title>{{ identity.name }} — book your chair</title>
+  <meta name="description" content="{{ identity.tagline }}" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="{{ identity.fonts.google_fonts_url }}" rel="stylesheet" />
+  <link href="{{ identity.fonts.url }}" rel="stylesheet" />
   <style>
     :root {
       --bg: {{ identity.palette.bg }};
@@ -16,132 +17,203 @@
       --soft: {{ identity.palette.soft }};
       --display: "{{ identity.fonts.display }}", serif;
       --body: "{{ identity.fonts.body }}", sans-serif;
+      --r: {{ identity.radius }};
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { height: 100%; }
-    body {
-      background: var(--bg);
-      color: var(--ink);
-      font-family: var(--body);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      overflow: hidden;
-      -webkit-font-smoothing: antialiased;
-    }
-    /* The aesthetic effect lives behind the content */
-    .fx { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
-    .stage {
-      position: relative;
-      z-index: 1;
-      text-align: center;
-      padding: 8vmin;
-      max-width: 900px;
-    }
-    .eyebrow {
-      font-family: var(--body);
-      letter-spacing: 0.42em;
-      text-transform: uppercase;
-      font-size: clamp(0.6rem, 1.4vw, 0.8rem);
-      color: var(--accent);
-      margin-bottom: 2.2rem;
-      font-weight: 600;
-    }
-    .name {
-      font-family: var(--display);
-      font-weight: 700;
-      line-height: 0.98;
-      font-size: clamp(2.8rem, 11vw, 8rem);
-      letter-spacing: -0.01em;
-    }
-    .tagline {
-      margin-top: 1.8rem;
-      font-size: clamp(1rem, 2.4vw, 1.5rem);
-      color: var(--ink);
-      opacity: 0.86;
-      max-width: 36ch;
-      margin-left: auto;
-      margin-right: auto;
-      line-height: 1.45;
-    }
-    .swatches { margin-top: 3rem; display: flex; gap: 0.6rem; justify-content: center; }
-    .swatch { width: 34px; height: 34px; border-radius: 50%; box-shadow: 0 0 0 1px rgba(255,255,255,0.12); }
-    .footer {
-      position: fixed; bottom: 1.4rem; left: 0; right: 0; z-index: 2;
-      text-align: center; font-family: var(--body);
-      font-size: 0.7rem; letter-spacing: 0.28em; text-transform: uppercase;
-      opacity: 0.5;
-    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--ink); font-family:var(--body); -webkit-font-smoothing:antialiased; line-height:1.55; }
+    a { color:inherit; }
+    .wrap { max-width:1080px; margin:0 auto; padding:0 6vw; }
+    .display { font-family:var(--display); }
+    .muted { color:color-mix(in srgb, var(--ink) 62%, transparent); }
 
-    /* ---------- EFFECT: sigil-lines (Cybersigilism) ---------- */
-    .fx-sigil-lines {
-      background:
-        radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--accent2) 22%, transparent), transparent 60%),
-        repeating-linear-gradient(115deg, transparent 0 26px, color-mix(in srgb, var(--accent) 10%, transparent) 26px 27px),
-        repeating-linear-gradient(65deg, transparent 0 22px, color-mix(in srgb, var(--ink) 5%, transparent) 22px 23px);
-    }
-    .fx-sigil-lines::after {
-      content: ""; position: absolute; inset: -20%;
-      background: radial-gradient(circle, transparent 60%, var(--bg) 100%);
-    }
+    /* ---------- base components (layouts override below) ---------- */
+    .btn { display:inline-flex; align-items:center; gap:.5rem; font-family:var(--display); font-weight:600;
+           background:var(--accent); color:var(--bg); padding:.85rem 1.5rem; border-radius:var(--r);
+           text-decoration:none; border:none; cursor:pointer; transition:transform .15s, filter .15s; }
+    .btn:hover { transform:translateY(-2px); filter:brightness(1.07); }
+    .btn.ghost { background:transparent; color:var(--ink); border:1.5px solid color-mix(in srgb,var(--ink) 30%,transparent); }
 
-    /* ---------- EFFECT: tapa-pattern (Pasifika) ---------- */
-    .fx-tapa-pattern {
-      background:
-        repeating-linear-gradient(45deg, color-mix(in srgb, var(--accent) 14%, transparent) 0 10px, transparent 10px 20px),
-        repeating-linear-gradient(-45deg, color-mix(in srgb, var(--accent2) 14%, transparent) 0 10px, transparent 10px 20px);
-      background-size: 56px 56px;
-      opacity: 0.9;
-    }
-    .fx-tapa-pattern::after {
-      content: ""; position: absolute; inset: 0;
-      background: radial-gradient(ellipse at center, transparent 35%, var(--bg) 92%);
-    }
+    nav.nav { position:sticky; top:0; z-index:20; backdrop-filter:blur(10px);
+              background:color-mix(in srgb,var(--bg) 84%,transparent);
+              border-bottom:1px solid color-mix(in srgb,var(--ink) 10%,transparent); }
+    .nav .wrap { display:flex; justify-content:space-between; align-items:center; padding:1rem 6vw; }
+    .brandmark { font-family:var(--display); font-weight:600; font-size:1.3rem; }
 
-    /* ---------- EFFECT: neon-grid (Vaporwave) ---------- */
-    .fx-neon-grid { background: linear-gradient(180deg, var(--soft) 0%, var(--bg) 60%); }
-    .fx-neon-grid::before {
-      content: ""; position: absolute; left: -50%; right: -50%; bottom: -10%; height: 70%;
-      background-image:
-        linear-gradient(color-mix(in srgb, var(--accent2) 60%, transparent) 1px, transparent 1px),
-        linear-gradient(90deg, color-mix(in srgb, var(--accent2) 60%, transparent) 1px, transparent 1px);
-      background-size: 44px 44px;
-      transform: perspective(340px) rotateX(62deg);
-      transform-origin: bottom;
-      mask-image: linear-gradient(180deg, transparent, #000 70%);
-    }
-    .fx-neon-grid::after {
-      content: ""; position: absolute; top: 12%; left: 50%; width: 320px; height: 320px;
-      transform: translateX(-50%);
-      background: radial-gradient(circle, var(--accent) 0%, color-mix(in srgb, var(--accent) 40%, transparent) 40%, transparent 70%);
-      border-radius: 50%; filter: blur(6px); opacity: 0.85;
-    }
+    .hero { position:relative; overflow:hidden; padding:13vh 0 11vh; }
+    .eyebrow { font-family:var(--body); letter-spacing:.3em; text-transform:uppercase; font-size:.75rem; color:var(--accent); font-weight:600; }
+    .htitle { font-family:var(--display); line-height:.98; letter-spacing:-.02em; font-size:clamp(2.8rem,9vw,6.5rem); margin:1.1rem 0 .3rem; }
+    .tag { font-size:clamp(1.05rem,2.2vw,1.4rem); max-width:34ch; }
+    .herocta { display:flex; gap:.8rem; flex-wrap:wrap; margin-top:2.2rem; }
 
-    /* ---------- EFFECT: fine-rules (Editorial Luxe) ---------- */
-    .fx-fine-rules::before,
-    .fx-fine-rules::after {
-      content: ""; position: absolute; left: 7vmin; right: 7vmin; height: 1px;
-      background: color-mix(in srgb, var(--ink) 30%, transparent);
-    }
-    .fx-fine-rules::before { top: 7vmin; }
-    .fx-fine-rules::after { bottom: 7vmin; }
+    section.block { padding:9vh 0; }
+    .label { font-family:var(--display); font-weight:600; letter-spacing:.04em; font-size:1rem; color:var(--accent); text-transform:uppercase; margin-bottom:1.4rem; }
+    .block h2 { font-family:var(--display); font-size:clamp(1.8rem,5vw,3rem); line-height:1.02; letter-spacing:-.02em; }
+
+    .gallery { display:grid; gap:.8rem; margin-top:1rem; grid-template-columns:repeat(3,1fr); }
+    .shot { aspect-ratio:3/4; border-radius:var(--r); background-size:cover; background-position:center; background-color:var(--soft);
+            box-shadow:0 12px 30px color-mix(in srgb,var(--ink) 16%,transparent); }
+    .shot.empty { display:flex; align-items:center; justify-content:center; color:color-mix(in srgb,var(--ink) 38%,transparent);
+                  font-size:.8rem; letter-spacing:.1em; text-transform:uppercase; border:1.5px dashed color-mix(in srgb,var(--ink) 22%,transparent); background:transparent; box-shadow:none; }
+
+    .about .wrap { display:grid; grid-template-columns:1.5fr 1fr; gap:3rem; align-items:start; }
+    .bio { font-family:var(--display); font-weight:500; font-size:clamp(1.15rem,2.4vw,1.6rem); line-height:1.45; }
+    .spec-label { font-size:.8rem; letter-spacing:.2em; text-transform:uppercase; opacity:.55; margin-bottom:.9rem; }
+    .tags { display:flex; flex-wrap:wrap; gap:.6rem; }
+    .tag-chip { border:1px solid color-mix(in srgb,var(--accent) 45%,transparent); background:color-mix(in srgb,var(--accent) 14%,transparent);
+                padding:.5rem .9rem; border-radius:var(--r); font-size:.9rem; font-weight:500; }
+
+    .proof { background:color-mix(in srgb,var(--ink) 5%,var(--bg)); }
+    .quotes { display:grid; grid-template-columns:repeat(3,1fr); gap:1.2rem; margin-top:1rem; }
+    .quote { background:var(--bg); border:1px solid color-mix(in srgb,var(--ink) 12%,transparent); border-radius:var(--r); padding:1.6rem; }
+    .quote .stars { color:var(--accent); letter-spacing:.1em; margin-bottom:.6rem; }
+    .quote p { font-family:var(--display); font-weight:500; font-size:1.05rem; line-height:1.4; }
+    .quote .who { margin-top:1rem; font-size:.85rem; opacity:.6; }
+    .sample { font-size:.72rem; opacity:.45; margin-top:1.4rem; }
+
+    /* design DNA (the deconstruction) */
+    .dna-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:1.6rem 2.4rem; margin-top:1rem; }
+    .dna-k { font-size:.74rem; letter-spacing:.2em; text-transform:uppercase; color:var(--accent); margin-bottom:.5rem; }
+    .dna-grid p { color:color-mix(in srgb,var(--ink) 82%,transparent); }
+    .dna-sw { display:flex; gap:.4rem; }
+    .dna-sw span { width:36px; height:36px; border-radius:calc(var(--r) * .5); box-shadow:0 0 0 1px color-mix(in srgb,var(--ink) 14%,transparent); }
+    .dna-why { font-family:var(--display); font-size:clamp(1.2rem,2.8vw,1.9rem); line-height:1.4; margin-top:2rem; max-width:32ch; }
+    @media (max-width:720px){ .dna-grid{grid-template-columns:1fr} }
+
+    .close { text-align:center; }
+    .close h2 { margin:0 auto 1.6rem; }
+    footer { border-top:1px solid color-mix(in srgb,var(--ink) 12%,transparent); padding:3.5vh 0; text-align:center; }
+    footer .fnote { font-size:.8rem; opacity:.55; }
+    footer a { color:var(--accent); text-decoration:none; }
+    @media (max-width:720px){ .gallery{grid-template-columns:repeat(2,1fr)} .about .wrap{grid-template-columns:1fr; gap:1.6rem} .quotes{grid-template-columns:1fr} }
+
+    /* ================= LAYOUT: editorial ================= */
+    .lay-editorial .hero { text-align:left; }
+    .lay-editorial .htitle { font-weight:600; max-width:13ch; }
+    .lay-editorial .hero::before, .lay-editorial .hero::after { content:""; position:absolute; left:6vw; right:6vw; height:1px; background:color-mix(in srgb,var(--ink) 22%,transparent); }
+    .lay-editorial .hero::before { top:0; } .lay-editorial .hero::after { bottom:0; }
+    .lay-editorial .tag { margin-top:1.2rem; color:color-mix(in srgb,var(--ink) 75%,transparent); }
+    .lay-editorial .label { font-weight:500; letter-spacing:.18em; }
+
+    /* ================= LAYOUT: bold ================= */
+    .lay-bold { letter-spacing:-.01em; }
+    .lay-bold .hero { text-align:center; padding:14vh 0 12vh; }
+    .lay-bold .htitle { font-size:clamp(3rem,12vw,8rem); text-transform:uppercase; letter-spacing:-.02em; line-height:.9; margin-left:auto; margin-right:auto; }
+    .lay-bold .tag { margin:1.4rem auto 0; }
+    .lay-bold .herocta { justify-content:center; }
+    .lay-bold .btn { box-shadow:5px 5px 0 var(--ink); border:2.5px solid var(--ink); }
+    .lay-bold .btn:hover { transform:translate(-2px,-2px); box-shadow:7px 7px 0 var(--ink); filter:none; }
+    .lay-bold .btn.ghost { background:#fff; color:var(--ink); }
+    .lay-bold section.block { text-align:center; }
+    .lay-bold .block h2 { font-size:clamp(2rem,6vw,3.6rem); text-transform:uppercase; }
+    .lay-bold .proof { background:var(--accent); color:var(--bg); }
+    .lay-bold .proof .label { color:var(--bg); }
+    .lay-bold .quote { background:var(--bg); color:var(--ink); border:2.5px solid var(--ink); box-shadow:5px 5px 0 var(--ink); }
+    .lay-bold .about .wrap { grid-template-columns:1fr; text-align:center; gap:1.6rem; }
+    .lay-bold .tags { justify-content:center; }
+    .lay-bold .tag-chip { border:2px solid var(--ink); background:var(--soft); }
+    .lay-bold .shot { border:2.5px solid var(--ink); box-shadow:6px 6px 0 var(--ink); }
+
+    /* ================= LAYOUT: moody ================= */
+    .lay-moody .hero { min-height:88vh; display:flex; align-items:flex-end; padding:0 0 9vh; }
+    .lay-moody .hero::before { content:""; position:absolute; inset:0; z-index:0;
+        background:radial-gradient(120% 80% at 70% 10%, color-mix(in srgb,var(--accent) 30%,transparent), transparent 60%),
+                   linear-gradient(180deg, transparent, color-mix(in srgb,var(--ink) 20%,transparent)); }
+    .lay-moody .hero .wrap { position:relative; z-index:1; }
+    .lay-moody .htitle { font-size:clamp(3rem,11vw,7.5rem); font-weight:600; }
+    .lay-moody .tag { color:color-mix(in srgb,var(--ink) 78%,transparent); }
+    .lay-moody .gallery { grid-template-columns:2fr 1fr 1fr; grid-auto-rows:1fr; }
+    .lay-moody .shot:first-child { grid-row:span 2; aspect-ratio:auto; }
+    .lay-moody .quote { background:color-mix(in srgb,var(--ink) 8%,var(--bg)); border-color:color-mix(in srgb,var(--ink) 18%,transparent); }
+    .lay-moody .proof { background:color-mix(in srgb,var(--ink) 10%,var(--bg)); }
+    @media (max-width:720px){ .lay-moody .gallery{grid-template-columns:repeat(2,1fr)} .lay-moody .shot:first-child{grid-row:auto; aspect-ratio:3/4} }
   </style>
 </head>
-<body>
-  <div class="fx fx-{{ identity.effect }}"></div>
-  <main class="stage">
-    <div class="eyebrow">{{ identity.eyebrow }}</div>
-    <h1 class="name">{{ identity.name }}</h1>
-    <p class="tagline">{{ identity.tagline }}</p>
-    <div class="swatches">
-      <span class="swatch" style="background: var(--accent)"></span>
-      <span class="swatch" style="background: var(--accent2)"></span>
-      <span class="swatch" style="background: var(--soft)"></span>
-      <span class="swatch" style="background: var(--ink)"></span>
+<body class="lay-{{ identity.layout }}">
+  {% set book = identity.booking or '#book' %}
+
+  <nav class="nav">
+    <div class="wrap">
+      <div class="brandmark">{{ identity.name }}</div>
+      <a class="btn" href="{{ book }}" {% if identity.booking %}target="_blank" rel="noopener"{% endif %}>Book a chair</a>
     </div>
-  </main>
-  <div class="footer">sawft launched with SawftLaunch</div>
+  </nav>
+
+  <header class="hero">
+    <div class="wrap">
+      <div class="eyebrow">{{ identity.eyebrow }}</div>
+      <h1 class="htitle">{{ identity.name }}</h1>
+      <p class="tag">{{ identity.tagline }}</p>
+      <div class="herocta">
+        <a class="btn" href="{{ book }}" {% if identity.booking %}target="_blank" rel="noopener"{% endif %}>Book your chair →</a>
+        <a class="btn ghost" href="#work">See the work</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="block" id="work">
+    <div class="wrap">
+      <div class="label">The work</div>
+      <div class="gallery">
+        {% if identity.photos %}
+          {% for p in identity.photos %}<div class="shot" style="background-image:url('{{ p }}')"></div>{% endfor %}
+        {% else %}
+          {% for i in range(4) %}<div class="shot empty">your work here</div>{% endfor %}
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+  <section class="block about">
+    <div class="wrap">
+      <div>
+        <div class="label">The chair</div>
+        <p class="bio">{{ identity.bio or identity.tagline }}</p>
+      </div>
+      {% if identity.specialties %}
+      <div>
+        <div class="spec-label">Known for</div>
+        <div class="tags">{% for s in identity.specialties %}<span class="tag-chip">{{ s }}</span>{% endfor %}</div>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+
+  {% if identity.dna and identity.dna.what_works %}
+  <section class="block dna">
+    <div class="wrap">
+      <div class="label">Reverse-engineered</div>
+      <h2 class="display">The DNA we pulled.</h2>
+      <div class="dna-grid">
+        {% if identity.dna.palette_seen %}<div><div class="dna-k">Palette</div><div class="dna-sw">{% for c in identity.dna.palette_seen %}<span style="background:{{ c }}"></span>{% endfor %}</div></div>{% endif %}
+        <div><div class="dna-k">Type</div><p>{{ identity.dna.type_character }}</p></div>
+        <div><div class="dna-k">Composition</div><p>{{ identity.dna.composition }}</p></div>
+        {% if identity.dna.mood %}<div><div class="dna-k">Mood</div><div class="tags">{% for m in identity.dna.mood %}<span class="tag-chip">{{ m }}</span>{% endfor %}</div></div>{% endif %}
+      </div>
+      <p class="dna-why">{{ identity.dna.what_works }}</p>
+    </div>
+  </section>
+  {% endif %}
+
+  <section class="block proof">
+    <div class="wrap">
+      <div class="label">What clients say</div>
+      <div class="quotes">
+        <div class="quote"><div class="stars">★★★★★</div><p>“Cleanest fade I've had in years. I'm not going anywhere else.”</p><div class="who">— Marcus T.</div></div>
+        <div class="quote"><div class="stars">★★★★★</div><p>“Walked out feeling like a different person. Worth every dollar.”</p><div class="who">— Devon R.</div></div>
+        <div class="quote"><div class="stars">★★★★★</div><p>“Booked my whole crew here. The attention to detail is unreal.”</p><div class="who">— Andre P.</div></div>
+      </div>
+      <p class="sample">Sample reviews — swap in your real ones.</p>
+    </div>
+  </section>
+
+  <section class="block close" id="book">
+    <div class="wrap">
+      <h2 class="display">Ready for a fresh cut?</h2>
+      <a class="btn" href="{{ book }}" {% if identity.booking %}target="_blank" rel="noopener"{% endif %}>Book your chair →</a>
+    </div>
+  </section>
+
+  <footer><div class="wrap fnote">{{ identity.name }} · sawft launched with <a href="/">SawftLaunch ✦</a></div></footer>
 </body>
 </html>

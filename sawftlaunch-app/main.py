@@ -14,8 +14,8 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from starlette.concurrency import run_in_threadpool
 
-import aesthetics
 import brain
+import design
 import storage
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -32,19 +32,25 @@ ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"}
 # ---------------------------------------------------------------------------
 # Identity assembly + storage
 # ---------------------------------------------------------------------------
-def build_identity(aesthetic_id, name, tagline, palette=None, eyebrow="sawft launch"):
-    """Assemble a render-ready identity from an aesthetic + personalization."""
-    a = aesthetics.get_aesthetic(aesthetic_id)
-    if a is None:
-        raise HTTPException(status_code=404, detail=f"Unknown aesthetic: {aesthetic_id}")
+def build_identity(layout, name, tagline, palette=None, font_pairing="modern-grotesk",
+                   shape="rounded", eyebrow="", bio="", specialties=None, booking="",
+                   photos=None, dna=None):
+    """Assemble a render-ready barber portfolio from the composed design spec."""
+    if layout not in design.LAYOUTS:
+        layout = "editorial"
     return {
-        "aesthetic_id": aesthetic_id,
+        "layout": layout,
         "name": name,
         "tagline": tagline,
         "eyebrow": eyebrow,
-        "effect": a["effect"],
-        "fonts": a["fonts"],
-        "palette": palette or a["base_palette"],
+        "bio": bio,
+        "specialties": specialties or [],
+        "booking": booking,
+        "photos": photos or [],
+        "dna": dna or {},
+        "fonts": design.get_fonts(font_pairing),   # {display, body, url}
+        "radius": design.get_radius(shape),
+        "palette": palette or design.DEFAULT_PALETTE,
     }
 
 
@@ -65,13 +71,11 @@ def health():
 async def generate(
     request: Request,
     what: str = Form(...),
-    feeling: str = Form(...),
     name: str = Form(""),
-    aesthetic: str = Form(""),
-    world: str = Form("either"),
-    photos: list[UploadFile] = [],  # noqa: B006 (FastAPI handles default)
+    booking: str = Form(""),
+    photos: list[UploadFile] = [],  # noqa: B006 — these are INSPIRATION images
 ):
-    # Collect uploaded photos as base64 (skip empties / non-images).
+    # Collect inspiration images as base64 (skip empties / non-images).
     images = []
     for upload in photos[:MAX_PHOTOS]:
         if not upload or not upload.filename:
@@ -85,10 +89,7 @@ async def generate(
 
     answers = {
         "name they gave": name,
-        "who they are / what they're launching": what,
-        "the feeling they want in 3 seconds": feeling,
-        "an aesthetic they like": aesthetic,
-        "light or dark world": world,
+        "what they do": what,
     }
 
     # The brain call is blocking network IO — run it off the event loop.
@@ -100,11 +101,17 @@ async def generate(
         )
 
     render_identity = build_identity(
-        result["aesthetic_id"],
+        result["layout"],
         name=result["brand_name"],
         tagline=result["tagline"],
         palette=result["palette"],
+        font_pairing=result["font_pairing"],
+        shape=result["shape"],
         eyebrow=result["eyebrow"],
+        bio=result.get("bio", ""),
+        specialties=result.get("specialties", []),
+        booking=booking.strip(),
+        dna=result.get("dna"),
     )
     slug = storage.save_identity(render_identity)
     return RedirectResponse(url=f"/u/{slug}", status_code=303)
@@ -118,20 +125,43 @@ def show_identity(request: Request, slug: str):
     return templates.TemplateResponse(request, "page.html", {"identity": identity})
 
 
-# Preview routes for the curated crayon box (no AI — handy for browsing styles).
+# Preview routes — sample barber in each layout (no AI; handy for QA).
 _PREVIEW_SAMPLES = {
-    "cybersigilism": ("NOVA", "Underground sound, future rituals. New drop incoming."),
-    "pasifika": ("Moana Made", "Hand-woven goods, ocean-rooted stories."),
-    "vaporwave": ("After Hours", "Late-night synth dreams and neon afterglow."),
-    "editorial-luxe": ("Atelier Sève", "Quiet luxury, considered objects, made to last."),
+    "editorial": {
+        "font": "editorial-serif", "shape": "sharp",
+        "palette": {"bg": "#f6f1e7", "ink": "#1d1b18", "accent": "#b5482e", "accent2": "#7d8466", "soft": "#cdbfa6"},
+        "name": "Atelier Fade", "eyebrow": "Master Barber · NYC",
+        "tagline": "Precision cuts with a quiet, considered hand.",
+        "bio": "Atelier Fade is the chair where patience meets a straight razor. Every line is measured, every fade earned — work that holds up in daylight and in photos.",
+        "specialties": ["Skin fades", "Scissor work", "Beard sculpting", "Hot towel shave"],
+    },
+    "bold": {
+        "font": "heavy-impact", "shape": "rounded",
+        "palette": {"bg": "#fff7e8", "ink": "#161310", "accent": "#ff4d2e", "accent2": "#1fb6a6", "soft": "#ffc233"},
+        "name": "FRESH CUTS CO", "eyebrow": "Barbershop · Open 7 days",
+        "tagline": "Sharp cuts, good energy, zero waiting around.",
+        "bio": "Walk in, walk out a new person. We move fast, cut clean, and keep the music loud. The crew's chair of choice.",
+        "specialties": ["Tapers", "Designs", "Kids cuts", "Line-ups", "Color"],
+    },
+    "moody": {
+        "font": "quiet-luxe", "shape": "soft",
+        "palette": {"bg": "#13110e", "ink": "#f3efe6", "accent": "#c7a45a", "accent2": "#6b6256", "soft": "#262219"},
+        "name": "Midnight Barber", "eyebrow": "By appointment · Private studio",
+        "tagline": "Late chairs, low light, immaculate cuts.",
+        "bio": "A private studio for those who'd rather not wait in a crowd. One chair, full attention, and a cut finished to the millimeter.",
+        "specialties": ["Executive cuts", "Beard design", "Grey blending", "Straight razor"],
+    },
 }
 
 
-@app.get("/preview/{aesthetic_id}", response_class=HTMLResponse)
-def preview(request: Request, aesthetic_id: str):
-    sample = _PREVIEW_SAMPLES.get(aesthetic_id)
-    if sample is None:
-        raise HTTPException(status_code=404, detail=f"Unknown aesthetic: {aesthetic_id}")
-    name, tagline = sample
-    identity = build_identity(aesthetic_id, name=name, tagline=tagline)
+@app.get("/preview/{layout}", response_class=HTMLResponse)
+def preview(request: Request, layout: str):
+    s = _PREVIEW_SAMPLES.get(layout)
+    if s is None:
+        raise HTTPException(status_code=404, detail=f"Unknown layout: {layout}")
+    identity = build_identity(
+        layout, name=s["name"], tagline=s["tagline"], palette=s["palette"],
+        font_pairing=s["font"], shape=s["shape"], eyebrow=s["eyebrow"],
+        bio=s["bio"], specialties=s["specialties"],
+    )
     return templates.TemplateResponse(request, "page.html", {"identity": identity})
